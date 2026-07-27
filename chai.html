@@ -27,13 +27,14 @@
     --c-toppings:#8C6F9E;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0; height:100%;}
   body{
+    display:flex; flex-direction:column;
+    height:100vh; height:100dvh; overflow:hidden;
     background:var(--bg);
     color:var(--ink);
     font-family:'Manrope',system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
-    padding-bottom:48px;
   }
   h1,h2,h3,.serif{font-family:'Fraunces',serif;}
 
@@ -43,13 +44,21 @@
     clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
   }
 
+  /* Header sits outside the scrolling area entirely, so it never needs position:fixed/
+     sticky — those behave unreliably inside embedded WebViews like Telegram's in-app
+     browser (the toolbar collapsing/expanding on scroll can detach fixed elements). */
   header.topbar{
-    position:fixed; top:0; left:0; right:0; z-index:20;
+    flex:0 0 auto;
     background:rgba(237,231,229,0.96);
     border-bottom:1px solid var(--line);
     padding:12px 14px 10px;
   }
-  #header-spacer{height:196px;}
+  #scroll-area{
+    flex:1 1 auto;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:48px;
+  }
   .brand{display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:14px; text-align:center;}
   .brand h1{
     font-family:'Manrope',system-ui,sans-serif; font-size:1.7rem; font-weight:700; margin:0;
@@ -210,19 +219,19 @@
   }
 
   /* ---------- CSS-only category tabs (work even without JS) ---------- */
-#tab-cold:checked ~ main .category:not([data-cat="cold"]){display:none;}
+#tab-cold:checked ~ #scroll-area main .category:not([data-cat="cold"]){display:none;}
 #tab-cold:checked ~ header label[for="tab-cold"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-detox:checked ~ main .category:not([data-cat="detox"]){display:none;}
+#tab-detox:checked ~ #scroll-area main .category:not([data-cat="detox"]){display:none;}
 #tab-detox:checked ~ header label[for="tab-detox"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-fruit:checked ~ main .category:not([data-cat="fruit"]){display:none;}
+#tab-fruit:checked ~ #scroll-area main .category:not([data-cat="fruit"]){display:none;}
 #tab-fruit:checked ~ header label[for="tab-fruit"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-milk:checked ~ main .category:not([data-cat="milk"]){display:none;}
+#tab-milk:checked ~ #scroll-area main .category:not([data-cat="milk"]){display:none;}
 #tab-milk:checked ~ header label[for="tab-milk"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-classic:checked ~ main .category:not([data-cat="classic"]){display:none;}
+#tab-classic:checked ~ #scroll-area main .category:not([data-cat="classic"]){display:none;}
 #tab-classic:checked ~ header label[for="tab-classic"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-summer:checked ~ main .category:not([data-cat="summer"]){display:none;}
+#tab-summer:checked ~ #scroll-area main .category:not([data-cat="summer"]){display:none;}
 #tab-summer:checked ~ header label[for="tab-summer"]{background:var(--dot);border-color:var(--dot);color:#fff;}
-#tab-toppings:checked ~ main .category:not([data-cat="toppings"]){display:none;}
+#tab-toppings:checked ~ #scroll-area main .category:not([data-cat="toppings"]){display:none;}
 #tab-toppings:checked ~ header label[for="tab-toppings"]{background:var(--dot);border-color:var(--dot);color:#fff;}
 #tab-all:checked ~ header label[for="tab-all"]{background:var(--accent-ink);border-color:var(--accent-ink);color:#fff;}
 </style>
@@ -240,20 +249,7 @@
 <span id="count">Всего рецептов и позиций: 62</span>
 <nav class="pills"><label class="pill" for="tab-all">Все<span class="n">62</span></label><label class="pill" for="tab-cold" style="--dot:var(--c-cold)">Холодные чаи<span class="n">6</span></label><label class="pill" for="tab-detox" style="--dot:var(--c-detox)">Детоксы<span class="n">4</span></label><label class="pill" for="tab-fruit" style="--dot:var(--c-fruit)">Фруктовые тизаны<span class="n">9</span></label><label class="pill" for="tab-milk" style="--dot:var(--c-milk)">Чаи на молоке и соке<span class="n">6</span></label><label class="pill" for="tab-classic" style="--dot:var(--c-classic)">Классика и пуэры<span class="n">27</span></label><label class="pill" for="tab-summer" style="--dot:var(--c-summer)">Спец лето<span class="n">4</span></label><label class="pill" for="tab-toppings" style="--dot:var(--c-toppings)">Топинги (отдельно)<span class="n">6</span></label></nav>
 </header>
-<div id="header-spacer"></div>
-<script>
-(function(){
-  var header = document.querySelector('header.topbar');
-  var spacer = document.getElementById('header-spacer');
-  function sync(){ if(header && spacer){ spacer.style.height = header.offsetHeight + 'px'; } }
-  sync();
-  window.addEventListener('resize', sync);
-  window.addEventListener('orientationchange', sync);
-  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(sync); }
-  if (window.ResizeObserver) { new ResizeObserver(sync).observe(header); }
-  else { setTimeout(sync, 300); }
-})();
-</script>
+<div id="scroll-area">
 <noscript><p style="margin:14px 14px 0;">Поиск работает только с включённым JavaScript. Категории вверху и раскрытие карточек работают в любом просмотрщике, JS для них не нужен.</p></noscript>
 <main id="app">
 <section class="category" data-cat="cold" style="--dot:var(--c-cold)">
@@ -784,6 +780,7 @@
   Справочник собран на основе файла ТТК_ХиП_2026.xlsx для работников сети ресторанов MKS «Хачо и Пури» и «Пхали-Хинкали».
   <p style="margin-top:28px; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem; letter-spacing:.04em; color:var(--accent-ink);">d.b wish</p>
 </footer>
+</div>
 <script>
 (function(){
   const search = document.getElementById('search');
@@ -870,17 +867,18 @@
   function contentOf(d){ return d.querySelector(':scope > .card-content'); }
 
   function scrollCardIntoView(d){
-    const header = document.querySelector('header.topbar');
-    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const scrollArea = document.getElementById('scroll-area');
+    if(!scrollArea) return;
     const gap = 10;
     const rect = d.getBoundingClientRect();
-    const availableH = window.innerHeight - headerH;
+    const areaRect = scrollArea.getBoundingClientRect();
+    const availableH = areaRect.height;
     const targetTop = rect.height <= availableH
-      ? headerH + (availableH - rect.height) / 2   // fits: center it below the header
-      : headerH + gap;                              // taller than the screen: pin its name just under the header
+      ? areaRect.top + (availableH - rect.height) / 2   // fits: center it in the scroll area
+      : areaRect.top + gap;                              // taller than the screen: pin its name near the top
     const delta = rect.top - targetTop;
     if(Math.abs(delta) > 4){
-      window.scrollBy({top: delta, behavior:'smooth'});
+      scrollArea.scrollBy({top: delta, behavior:'smooth'});
     }
   }
 
