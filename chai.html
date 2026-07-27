@@ -32,7 +32,7 @@
     display:flex; flex-direction:column;
     height:100vh; height:100dvh; overflow:hidden;
     background-color:var(--bg);
-    background-image:linear-gradient(rgba(237,231,229,0.78), rgba(237,231,229,0.78)), url("bg-chai.jpg");
+    background-image:linear-gradient(rgba(237,231,229,0.74), rgba(237,231,229,0.74)), url("bg-chai.jpg");
     background-size:cover, cover;
     background-position:center, center;
     background-repeat:no-repeat, no-repeat;
@@ -63,11 +63,8 @@
     padding-bottom:48px;
   }
   .brand{display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:14px; text-align:center;}
-  .brand h1{
-    font-family:'Manrope',system-ui,sans-serif; font-size:1.7rem; font-weight:700; margin:0;
-    letter-spacing:-.02em; line-height:1.05;
-    color:var(--ink);
-  }
+  .brand h1{margin:0;}
+  .brand-logo{height:42px; width:auto; display:block;}
   .brand .tag{
     font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.09em;
     color:var(--muted); text-transform:uppercase; border:none;
@@ -95,13 +92,11 @@
     font-size:.68rem; color:var(--muted); letter-spacing:.03em;
   }
   .pills{
-    display:flex; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch;
-    scrollbar-width:none; padding-bottom:2px;
+    display:flex; flex-wrap:wrap; gap:7px;
   }
-  .pills::-webkit-scrollbar{display:none;}
   .pill{
-    flex:0 0 auto; font-family:'Manrope',sans-serif; font-size:.78rem; font-weight:700;
-    padding:8px 14px; border-radius:8px; border:1.5px solid var(--line);
+    flex:0 0 auto; font-family:'Manrope',sans-serif; font-size:.76rem; font-weight:700;
+    padding:7px 12px; border-radius:8px; border:1.75px solid var(--dot, var(--line));
     background:var(--surface); color:var(--ink); white-space:nowrap; cursor:pointer;
     display:flex; align-items:center; gap:6px; -webkit-tap-highlight-color:transparent;
     transition:border-color .15s ease, transform .1s ease;
@@ -243,7 +238,7 @@
 <input checked="" class="tab-radio" id="tab-all" name="cat" type="radio"/><input class="tab-radio" id="tab-cold" name="cat" type="radio"/><input class="tab-radio" id="tab-detox" name="cat" type="radio"/><input class="tab-radio" id="tab-fruit" name="cat" type="radio"/><input class="tab-radio" id="tab-milk" name="cat" type="radio"/><input class="tab-radio" id="tab-classic" name="cat" type="radio"/><input class="tab-radio" id="tab-summer" name="cat" type="radio"/><input class="tab-radio" id="tab-toppings" name="cat" type="radio"/>
 <header class="topbar">
 <div class="brand">
-<h1>Чайная карта</h1>
+<h1><img alt="Чайная карта" class="brand-logo" src="logo-chai.png"/></h1>
 <span class="tag">27.07.2026</span>
 </div>
 <div class="search-row">
@@ -261,7 +256,7 @@
 <h2>Холодные чаи</h2>
 <span class="n" data-count="">6</span>
 </div>
-<details class="card" data-search="тайский снег · чай заварка отдельно" name="acc">
+<details class="card" open data-search="тайский снег · чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Тайский снег<span class="prep-note"> · чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -278,7 +273,7 @@
 <ul class="decor-list"><li><span class="decor-name">Корица палки</span><span class="decor-val">3г</span></li><li><span class="decor-name">Кокосовая стружка</span><span class="decor-val">Сверху</span></li><li><span class="decor-name">Шарик мороженного сливочное</span><span class="decor-val">Мороженное по весам</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="пиросмани · блендер, чай заварка отдельно" name="acc">
+<details class="card" open data-search="пиросмани · блендер, чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Пиросмани<span class="prep-note"> · блендер, чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -295,7 +290,7 @@
 <ul class="decor-list"><li><span class="decor-name">Базилик зелёный</span><span class="decor-val">2г</span></li><li><span class="decor-name">Ананас п/ф</span><span class="decor-val">15г</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="клубника личи · чай заварка отдельно" name="acc">
+<details class="card" open data-search="клубника личи · чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Клубника личи<span class="prep-note"> · чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -312,7 +307,7 @@
 <ul class="decor-list"><li><span class="decor-name">Яблоко</span><span class="decor-val">15г</span></li><li><span class="decor-name">Зеленый базик</span><span class="decor-val">1г</span></li><li><span class="decor-name">Сорбет "Малина"</span><span class="decor-val">по весам</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="манговый чай с апельсином и облепихой · чай заварка отдельно" name="acc">
+<details class="card" open data-search="манговый чай с апельсином и облепихой · чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Манговый чай с апельсином и облепихой<span class="prep-note"> · чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -329,7 +324,7 @@
 <ul class="decor-list"><li><span class="decor-name">Апельсин</span><span class="decor-val">15гр</span></li><li><span class="decor-name">Мята св</span><span class="decor-val">2гр</span></li><li><span class="decor-name">Корица палки</span><span class="decor-val">3г</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="алоэ индиго · чай заварка отдельно" name="acc">
+<details class="card" open data-search="алоэ индиго · чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Алоэ индиго<span class="prep-note"> · чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -346,7 +341,7 @@
 <ul class="decor-list"><li><span class="decor-name">Лимон</span><span class="decor-val">10г</span></li><li><span class="decor-name">Яблоко</span><span class="decor-val">15г</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="тбилиси - питер · чай заварка отдельно" name="acc">
+<details class="card" open data-search="тбилиси - питер · чай заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Тбилиси - Питер<span class="prep-note"> · чай заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -370,7 +365,7 @@
 <h2>Детоксы</h2>
 <span class="n" data-count="">4</span>
 </div>
-<details class="card" data-search="грейпфрутовый релакс · заварка отдельно" name="acc">
+<details class="card" open data-search="грейпфрутовый релакс · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Грейпфрутовый Релакс<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -383,7 +378,7 @@
 <tbody><tr><td class="ing-name">Чай "Релакс"</td><td class="ing-amt">8г</td><td class="ing-amt">10г</td></tr><tr><td class="ing-name">Мята</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Кардамон</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Апельсиновый сок(мл)</td><td class="ing-amt">60мл</td><td class="ing-amt">80мл</td></tr><tr><td class="ing-name">Грейпфрут</td><td class="ing-amt">40г</td><td class="ing-amt">60гр</td></tr><tr><td class="ing-name">Лимон</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Мед</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="аюрведа детокс · готовится в чайнике сразу" name="acc">
+<details class="card" open data-search="аюрведа детокс · готовится в чайнике сразу">
 <summary class="card-head">
 <span class="card-name">Аюрведа Детокс<span class="prep-note"> · готовится в чайнике сразу</span></span>
 <span class="chev">⌄</span>
@@ -396,7 +391,7 @@
 <tbody><tr><td class="ing-name">Чай "Саган Дайля"</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Чай "Хризантема"</td><td class="ing-amt">4г</td><td class="ing-amt">7г</td></tr><tr><td class="ing-name">Чай "Хвоя"</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Лимон</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Анис звёздочки</td><td class="ing-amt">2г</td><td class="ing-amt">4г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="чай с липой и ревнем · заварка отдельно" name="acc">
+<details class="card" open data-search="чай с липой и ревнем · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Чай с липой и ревнем<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -409,7 +404,7 @@
 <tbody><tr><td class="ing-name">Чай "Липа с мятой " ( Летняя беседа)</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Апельсин</td><td class="ing-amt">30г</td><td class="ing-amt">50г</td></tr><tr><td class="ing-name">Лимон</td><td class="ing-amt">30г</td><td class="ing-amt">50г</td></tr><tr><td class="ing-name">Лайм</td><td class="ing-amt">15г</td><td class="ing-amt">30г</td></tr><tr><td class="ing-name">Киви</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Ревень пюре</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Кардамон</td><td class="ing-amt">0,5г</td><td class="ing-amt">1г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="согревающий · готовится в чайнике сразу" name="acc">
+<details class="card" open data-search="согревающий · готовится в чайнике сразу">
 <summary class="card-head">
 <span class="card-name">Согревающий<span class="prep-note"> · готовится в чайнике сразу</span></span>
 <span class="chev">⌄</span>
@@ -429,7 +424,7 @@
 <h2>Фруктовые тизаны</h2>
 <span class="n" data-count="">9</span>
 </div>
-<details class="card" data-search="ягодный микс · заварка отдельно" name="acc">
+<details class="card" open data-search="ягодный микс · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Ягодный микс<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -442,7 +437,7 @@
 <tbody><tr><td class="ing-name">Чай "Таежный"</td><td class="ing-amt">6г</td><td class="ing-amt">9г</td></tr><tr><td class="ing-name">Смородина с/м</td><td class="ing-amt">30г</td><td class="ing-amt">45г</td></tr><tr><td class="ing-name">Клубника с/м</td><td class="ing-amt">30г</td><td class="ing-amt">45г</td></tr><tr><td class="ing-name">Клюква с/м</td><td class="ing-amt">30г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Мята с/в</td><td class="ing-amt">4г</td><td class="ing-amt">7г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="облепиха с грушей · заварка отдельно" name="acc">
+<details class="card" open data-search="облепиха с грушей · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Облепиха с грушей<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -455,7 +450,7 @@
 <tbody><tr><td class="ing-name">Чай "Иван-чай "</td><td class="ing-amt">6г</td><td class="ing-amt">9г</td></tr><tr><td class="ing-name">Груша</td><td class="ing-amt">40г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Облепиха с/м</td><td class="ing-amt">50г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="мелисса-клюква · заварка отдельно" name="acc">
+<details class="card" open data-search="мелисса-клюква · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Мелисса-Клюква<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -468,7 +463,7 @@
 <tbody><tr><td class="ing-name">Чай "Липа с мятой" ( Летняя беседа)</td><td class="ing-amt">3г</td><td class="ing-amt">5г</td></tr><tr><td class="ing-name">Корица (палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Лимон</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Апельсин</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Клюква с/м</td><td class="ing-amt">40г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Апельсиновый сок(мл)</td><td class="ing-amt">50мл</td><td class="ing-amt">100мл</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="смородина-базилик · заварка отдельно" name="acc">
+<details class="card" open data-search="смородина-базилик · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Смородина-Базилик<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -481,7 +476,7 @@
 <tbody><tr><td class="ing-name">Чай "Ассам"</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Гвоздика</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Зеленый Базилик</td><td class="ing-amt">6г</td><td class="ing-amt">8г</td></tr><tr><td class="ing-name">Лайм</td><td class="ing-amt">35г</td><td class="ing-amt">70г</td></tr><tr><td class="ing-name">Смородина с/м</td><td class="ing-amt">50г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="гранатово-малиновый личи фирменный · заварка отдельно" name="acc">
+<details class="card" open data-search="гранатово-малиновый личи фирменный · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Гранатово-малиновый личи Фирменный<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -494,7 +489,7 @@
 <tbody><tr><td class="ing-name">Чай "Личи хун ча"</td><td class="ing-amt">5г</td><td class="ing-amt">7г</td></tr><tr><td class="ing-name">Гвоздика</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Корица(палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Мята</td><td class="ing-amt">5г</td><td class="ing-amt">8г</td></tr><tr><td class="ing-name">Гранат ядра</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Малина с/м</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Наршараб (соус)/мл</td><td class="ing-amt">25г/20мл</td><td class="ing-amt">45г/40мл</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">15г</td><td class="ing-amt">30г</td></tr><tr><td class="ing-name">Сахар ( Добавляем если не сладкий)</td><td class="ing-amt">25г</td><td class="ing-amt">45г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="облепиха с имбирем и апельсином · заварка отдельно" name="acc">
+<details class="card" open data-search="облепиха с имбирем и апельсином · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Облепиха с имбирем и апельсином<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -507,7 +502,7 @@
 <tbody><tr><td class="ing-name">Чай "Иван-чай "</td><td class="ing-amt">6г</td><td class="ing-amt">9г</td></tr><tr><td class="ing-name">Облепиха с/м</td><td class="ing-amt">50г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Апельсин</td><td class="ing-amt">40г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Имбирь корень</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="имбирно-малиновый с облепихой и маракуей · заварка отдельно" name="acc">
+<details class="card" open data-search="имбирно-малиновый с облепихой и маракуей · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Имбирно-малиновый с облепихой и маракуей<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -520,7 +515,7 @@
 <tbody><tr><td class="ing-name">Чай "Ассам"</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Имбирь корень</td><td class="ing-amt">20г</td><td class="ing-amt">30г</td></tr><tr><td class="ing-name">Сироп маракуя (мл)</td><td class="ing-amt">20мл</td><td class="ing-amt">40мл</td></tr><tr><td class="ing-name">Мята с/в</td><td class="ing-amt">5г</td><td class="ing-amt">7г</td></tr><tr><td class="ing-name">Малина с/м</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr><tr><td class="ing-name">Облепиха с/м</td><td class="ing-amt">40г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="медвежья сила · заварка отдельно" name="acc">
+<details class="card" open data-search="медвежья сила · заварка отдельно">
 <summary class="card-head">
 <span class="card-name">Медвежья Сила<span class="prep-note"> · заварка отдельно</span></span>
 <span class="chev">⌄</span>
@@ -533,7 +528,7 @@
 <tbody><tr><td class="ing-name">Чай "Эрл грей"</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Варенье с шишками и кедровым орехом</td><td class="ing-amt">40г</td><td class="ing-amt">80г</td></tr><tr><td class="ing-name">Розмарин</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Лимон</td><td class="ing-amt">30г</td><td class="ing-amt">50г</td></tr><tr><td class="ing-name">Киви</td><td class="ing-amt">40г</td><td class="ing-amt">60гр</td></tr><tr><td class="ing-name">Мед</td><td class="ing-amt">20г</td><td class="ing-amt">60гр</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">10г</td><td class="ing-amt">20г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="умная клюква · готовится в чайнике сразу" name="acc">
+<details class="card" open data-search="умная клюква · готовится в чайнике сразу">
 <summary class="card-head">
 <span class="card-name">Умная клюква<span class="prep-note"> · готовится в чайнике сразу</span></span>
 <span class="chev">⌄</span>
@@ -553,7 +548,7 @@
 <h2>Чаи на молоке и соке</h2>
 <span class="n" data-count="">6</span>
 </div>
-<details class="card" data-search="пуэр на вишневом соке · варка" name="acc">
+<details class="card" open data-search="пуэр на вишневом соке · варка">
 <summary class="card-head">
 <span class="card-name">Пуэр на вишневом соке<span class="prep-note"> · варка</span></span>
 <span class="chev">⌄</span>
@@ -566,7 +561,7 @@
 <tbody><tr><td class="ing-name">Чай"Чень Нянь пуэр 10 лет"</td><td class="ing-amt">10г</td><td class="ing-amt">15г</td></tr><tr><td class="ing-name">Корица(палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Вода (мл)</td><td class="ing-amt">300мл-350мл</td><td class="ing-amt">400мл-450мл</td></tr><tr><td class="ing-name">Вишневый сок(мл)</td><td class="ing-amt">400мл</td><td class="ing-amt">800мл</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="пуэр на молоке · варка" name="acc">
+<details class="card" open data-search="пуэр на молоке · варка">
 <summary class="card-head">
 <span class="card-name">Пуэр на молоке<span class="prep-note"> · варка</span></span>
 <span class="chev">⌄</span>
@@ -579,7 +574,7 @@
 <tbody><tr><td class="ing-name">Чай "Чень Нянь пуэр 10 лет"</td><td class="ing-amt">10г</td><td class="ing-amt">15г</td></tr><tr><td class="ing-name">Молоко 3,2%(мл)</td><td class="ing-amt">400мл</td><td class="ing-amt">800мл</td></tr><tr><td class="ing-name">Вода (мл)</td><td class="ing-amt">300мл-350мл</td><td class="ing-amt">400мл-450мл</td></tr><tr><td class="ing-name">Гвоздика</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Корица(палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Имбирь корень</td><td class="ing-amt">20г</td><td class="ing-amt">30г</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="тайский синий чай на молоке" name="acc">
+<details class="card" open data-search="тайский синий чай на молоке">
 <summary class="card-head">
 <span class="card-name">Тайский синий чай на молоке</span>
 <span class="chev">⌄</span>
@@ -592,7 +587,7 @@
 <tbody><tr><td class="ing-name">Чай "Тайский синий чай"</td><td class="ing-amt">5г</td><td class="ing-amt">8г</td></tr><tr><td class="ing-name">Корица(палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Мускатный орех тёртый</td><td class="ing-amt">0,005г</td><td class="ing-amt">1г</td></tr><tr><td class="ing-name">Молоко 3,2%(мл)</td><td class="ing-amt">400мл</td><td class="ing-amt">600мл</td></tr><tr><td class="ing-name">Вода (мл)</td><td class="ing-amt">300мл-350мл</td><td class="ing-amt">400мл-450мл</td></tr><tr><td class="ing-name">Мёд цветочный ( в чайник )</td><td class="ing-amt">30г</td><td class="ing-amt">60г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="чай императора" name="acc">
+<details class="card" open data-search="чай императора">
 <summary class="card-head">
 <span class="card-name">Чай императора</span>
 <span class="chev">⌄</span>
@@ -605,7 +600,7 @@
 <tbody><tr><td class="ing-name">Чай "Иван чай"</td><td class="ing-amt">8г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Корица(палки)</td><td class="ing-amt">6г</td><td class="ing-amt">12г</td></tr><tr><td class="ing-name">Анис звёздочки</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Гвоздика</td><td class="ing-amt">1г</td><td class="ing-amt">2г</td></tr><tr><td class="ing-name">Молоко 3,2%(мл)</td><td class="ing-amt">400мл</td><td class="ing-amt">1000мл</td></tr><tr><td class="ing-name">Вода (мл)</td><td class="ing-amt">300мл-350мл</td><td class="ing-amt">400мл-450мл</td></tr><tr><td class="ing-name">Сироп карамель(мл)</td><td class="ing-amt">30мл</td><td class="ing-amt">60мл</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">10г</td><td class="ing-amt">20г</td></tr><tr><td class="ing-name">Шафран (в чайник)</td><td class="ing-amt">0,0001г</td><td class="ing-amt">0,0002г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="амарант" name="acc">
+<details class="card" open data-search="амарант">
 <summary class="card-head">
 <span class="card-name">Амарант</span>
 <span class="chev">⌄</span>
@@ -618,7 +613,7 @@
 <tbody><tr><td class="ing-name">Чай "Красная маття"</td><td class="ing-amt">5г</td><td class="ing-amt">8г</td></tr><tr><td class="ing-name">Чай "Китайская Роза"</td><td class="ing-amt">4г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Корица палки</td><td class="ing-amt">3г</td><td class="ing-amt">6г</td></tr><tr><td class="ing-name">Анис звёздочки</td><td class="ing-amt">4г</td><td class="ing-amt">8г</td></tr><tr><td class="ing-name">Имбирь</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Молоко 3,2%(мл)</td><td class="ing-amt">400мл</td><td class="ing-amt">800мл</td></tr><tr><td class="ing-name">Вода (мл)</td><td class="ing-amt">300мл-350мл</td><td class="ing-amt">400мл-450мл</td></tr><tr><td class="ing-name">Сахар</td><td class="ing-amt">20г</td><td class="ing-amt">40г</td></tr><tr><td class="ing-name">Мёд</td><td class="ing-amt">10г</td><td class="ing-amt">20г</td></tr></tbody>
 </table>
 </div></div></div></details>
-<details class="card" data-search="масала" name="acc">
+<details class="card" open data-search="масала">
 <summary class="card-head">
 <span class="card-name">Масала</span>
 <span class="chev">⌄</span>
@@ -694,7 +689,7 @@
 <h2>Спец лето</h2>
 <span class="n" data-count="">4</span>
 </div>
-<details class="card" data-search="«тбилиский сад»" name="acc">
+<details class="card" open data-search="«тбилиский сад»">
 <summary class="card-head">
 <span class="card-name">«Тбилиский Сад»</span>
 <span class="chev">⌄</span>
@@ -711,7 +706,7 @@
 <ul class="decor-list"><li><span class="decor-name">Грейпфрут</span><span class="decor-val">5гр</span></li><li><span class="decor-name">Лимон</span><span class="decor-val">5гр</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="«хевсурский эликсир»" name="acc">
+<details class="card" open data-search="«хевсурский эликсир»">
 <summary class="card-head">
 <span class="card-name">«Хевсурский эликсир»</span>
 <span class="chev">⌄</span>
@@ -728,7 +723,7 @@
 <ul class="decor-list"><li><span class="decor-name">Мята</span><span class="decor-val">1гр</span></li><li><span class="decor-name">Лимон</span><span class="decor-val">5гр</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search='"колхидский чай"' name="acc">
+<details class="card" open data-search='"колхидский чай"'>
 <summary class="card-head">
 <span class="card-name">"Колхидский Чай"</span>
 <span class="chev">⌄</span>
@@ -745,7 +740,7 @@
 <ul class="decor-list"><li><span class="decor-name">Огурец</span><span class="decor-val">10гр</span></li><li><span class="decor-name">Мята</span><span class="decor-val">1гр</span></li></ul>
 </div>
 </div></div></div></details>
-<details class="card" data-search="«имеретинская свежесть»" name="acc">
+<details class="card" open data-search="«имеретинская свежесть»">
 <summary class="card-head">
 <span class="card-name">«Имеретинская свежесть»</span>
 <span class="chev">⌄</span>
@@ -862,9 +857,9 @@
 </script>
 <script>
 (function(){
-  // Exclusive accordion (only one card open anywhere on the page) with a
-  // smooth animation in both directions. Falls back to the plain native
-  // <details name="acc"> behaviour if this script doesn't run.
+  // Cards start open by default (the `open` attribute in the markup). This
+  // script adds a smooth animation to manually collapsing/expanding any
+  // single card — each one toggles independently now, not exclusively.
   const cards = Array.from(document.querySelectorAll('details.card'));
 
   function contentOf(d){ return d.querySelector(':scope > .card-content'); }
@@ -927,7 +922,6 @@
     summary.addEventListener('click', (e)=>{
       e.preventDefault();
       const willOpen = !d.hasAttribute('open');
-      cards.forEach(other=>{ if(other !== d) closeCard(other); });
       if(willOpen) openCard(d); else closeCard(d);
     });
   });

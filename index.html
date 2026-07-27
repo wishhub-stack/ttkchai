@@ -47,6 +47,13 @@
   @media (hover:hover){
     a.card:hover{ border-color:var(--accent-ink); box-shadow:0 4px 16px rgba(51,44,44,0.09); transform:translateY(-1px); }
   }
+  a.card.card-tea{
+    background-color:var(--surface);
+    background-image:linear-gradient(rgba(251,249,248,0.74), rgba(251,249,248,0.74)), url("bg-chai.jpg");
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+  }
   .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
   .card-text{display:flex; flex-direction:column; gap:3px;}
   .card-date{
@@ -75,7 +82,7 @@
 <h2 class="rest-name">Хачо и Пури</h2>
 <div class="divider"></div>
 <div class="cards">
-<a class="card" href="chai.html">
+<a class="card card-tea" href="chai.html">
 <span class="card-text">
 <span class="card-name">Чайная карта</span>
 <span class="card-date">27.07.2026</span>
