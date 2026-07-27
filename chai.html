@@ -899,9 +899,13 @@
     content.style.willChange = 'height';
     content.style.transition = 'none';
     content.style.height = current + 'px';
-    content.getBoundingClientRect(); // force reflow so the start height is registered
-    content.style.transition = 'height .28s cubic-bezier(.65,0,.35,1)';
-    requestAnimationFrame(()=>{ content.style.height = '0px'; });
+    content.getBoundingClientRect(); // commit the starting frame before animating
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        content.style.transition = 'height .3s cubic-bezier(.4,0,.2,1)';
+        content.style.height = '0px';
+      });
+    });
     const onEnd = (e)=>{
       if(e.target !== content || e.propertyName !== 'height') return;
       content.removeEventListener('transitionend', onEnd);
@@ -921,10 +925,14 @@
     content.style.willChange = 'height';
     content.style.transition = 'none';
     content.style.height = '0px';
-    content.getBoundingClientRect(); // force reflow so the 0px start is registered
+    content.getBoundingClientRect(); // commit the starting frame before animating
     const target = content.scrollHeight;
-    content.style.transition = 'height .36s cubic-bezier(.65,0,.35,1)';
-    requestAnimationFrame(()=>{ content.style.height = target + 'px'; });
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        content.style.transition = 'height .36s cubic-bezier(.4,0,.2,1)';
+        content.style.height = target + 'px';
+      });
+    });
     const onEnd = (e)=>{
       if(e.target !== content || e.propertyName !== 'height') return;
       content.removeEventListener('transitionend', onEnd);

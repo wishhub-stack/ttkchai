@@ -5,7 +5,7 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
 <title>Меню · Хачо и Пури / Пхали-Хинкали</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;family=Unbounded:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
 <style>
   :root{
     --bg:#EDE7E5;
@@ -47,14 +47,22 @@
   @media (hover:hover){
     a.card:hover{ border-color:var(--accent-ink); box-shadow:0 4px 16px rgba(51,44,44,0.09); transform:translateY(-1px); }
   }
+  /* Same pattern + contrast treatment as the header of the tea card itself (chai.html):
+     a light .37-opacity tint over bg-chai.jpg, so the ornament reads clearly instead
+     of being washed out. */
   a.card.card-tea{
     background-color:var(--surface);
-    background-image:linear-gradient(rgba(251,249,248,0.7), rgba(251,249,248,0.7)), url("bg-chai.jpg");
-    background-size:220px auto, 220px auto;
+    background-image:linear-gradient(rgba(237,231,229,0.37), rgba(237,231,229,0.37)), url("bg-chai.jpg");
+    background-size:230px auto, 230px auto;
     background-position:center, center;
     background-repeat:repeat, repeat;
   }
   .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
+  /* Bold display face matched to the logo-chai.png reference art for the tea-card label. */
+  .card-name-tea{
+    font-family:'Unbounded',sans-serif; font-weight:800; font-size:.92rem;
+    letter-spacing:-.01em; text-transform:uppercase; color:var(--ink);
+  }
   .card-text{display:flex; flex-direction:column; gap:3px;}
   .card-date{
     font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.04em;
@@ -68,10 +76,47 @@
     padding:16px 18px; color:var(--muted); cursor:default;
   }
   .card.disabled .card-name{color:var(--muted); font-weight:400;}
+  .card.disabled .card-name-tea{color:var(--muted);}
 
   footer{
     max-width:520px; margin:36px auto 0; padding:0 18px; color:var(--muted);
     font-size:.74rem; line-height:1.5; text-align:center;
+  }
+
+  /* ---------- Signature: tap "d.b wish" and contact details fade in beneath it ---------- */
+  .sig{border:none; padding:0; margin-top:36px; text-align:center;}
+  .sig-input{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+    clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
+  }
+  .sig-name{
+    display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem;
+    letter-spacing:.04em; color:var(--accent-ink); cursor:pointer;
+    padding:4px 3px; border-bottom:1px dotted transparent;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  @media (hover:hover){
+    .sig-name:hover{ border-color:var(--accent-ink); }
+  }
+  .sig-reveal{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    max-height:0; opacity:0; filter:blur(5px); transform:translateY(-3px) scale(.97);
+    overflow:hidden; pointer-events:none;
+    transition:max-height .5s cubic-bezier(.22,.61,.36,1), opacity .4s ease,
+               filter .4s ease, transform .4s ease;
+  }
+  .sig-input:checked ~ .sig-reveal{
+    max-height:70px; opacity:1; filter:blur(0); transform:translateY(0) scale(1);
+    pointer-events:auto; margin-top:6px;
+  }
+  .sig-tg{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:.8rem;
+    letter-spacing:.03em; color:var(--accent-ink); text-decoration:none;
+    border-bottom:1px dotted var(--accent);
+  }
+  .sig-caption{
+    font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
+    max-width:260px; line-height:1.45;
   }
 </style>
 </head>
@@ -84,7 +129,7 @@
 <div class="cards">
 <a class="card card-tea" href="chai.html">
 <span class="card-text">
-<span class="card-name">Чайная карта</span>
+<span class="card-name card-name-tea">Чайная карта</span>
 <span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow">→</span>
@@ -104,7 +149,7 @@
 <div class="cards">
 <div class="card disabled">
 <span class="card-text">
-<span class="card-name">Чайная карта</span>
+<span class="card-name card-name-tea">Чайная карта</span>
 </span>
 </div>
 <div class="card disabled">
@@ -116,6 +161,15 @@
 </section>
 
 </div>
-<footer style="font-family:'Fraunces',serif; font-style:italic; font-size:.8rem; letter-spacing:.04em; color:var(--accent-ink); border:none; padding:0;">d.b wish</footer>
+
+<footer class="sig">
+  <input type="checkbox" id="sig-toggle" class="sig-input"/>
+  <label for="sig-toggle" class="sig-name">d.b wish</label>
+  <div class="sig-reveal">
+    <a class="sig-tg" href="https://t.me/wish_tg" target="_blank" rel="noopener">@wish_tg</a>
+    <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
+  </div>
+</footer>
+
 </body>
 </html>
