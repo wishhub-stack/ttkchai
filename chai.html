@@ -31,7 +31,11 @@
   body{
     display:flex; flex-direction:column;
     height:100vh; height:100dvh; overflow:hidden;
-    background:var(--bg);
+    background-color:var(--bg);
+    background-image:url("bg-chai.jpg");
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
     color:var(--ink);
     font-family:'Manrope',system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
@@ -49,7 +53,6 @@
      browser (the toolbar collapsing/expanding on scroll can detach fixed elements). */
   header.topbar{
     flex:0 0 auto;
-    background:rgba(237,231,229,0.96);
     border-bottom:1px solid var(--line);
     padding:12px 14px 10px;
   }
