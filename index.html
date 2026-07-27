@@ -28,14 +28,14 @@
     padding:40px 16px 60px;
   }
   .wrap{max-width:520px; margin:0 auto;}
-  header{display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; margin-bottom:34px;}
-  header h1{
-    font-family:'Manrope',sans-serif; font-size:1.7rem; font-weight:700; margin:0;
-    letter-spacing:-.02em; line-height:1.1;
+  .rest-block{margin-bottom:34px;}
+  .rest-block:last-child{margin-bottom:0;}
+  .rest-name{
+    font-family:'Manrope',sans-serif; font-size:1.32rem; font-weight:700; margin:0;
+    letter-spacing:-.02em; line-height:1.15; text-align:center; color:var(--ink);
   }
-  header .sub{
-    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.09em;
-    color:var(--muted); text-transform:uppercase;
+  .divider{
+    width:100%; height:1px; background:var(--line); margin:14px 0 16px;
   }
   .cards{display:flex; flex-direction:column; gap:10px;}
   a.card{
@@ -70,26 +70,45 @@
 </head>
 <body>
 <div class="wrap">
-<header>
-<h1>Меню</h1>
-<span class="sub">Хачо и Пури · Пхали-Хинкали</span>
-</header>
+
+<section class="rest-block">
+<h2 class="rest-name">Хачо и Пури</h2>
+<div class="divider"></div>
 <div class="cards">
 <a class="card" href="chai.html">
 <span class="card-text">
-<span class="card-name">Чайная карта ХиП</span>
+<span class="card-name">Чайная карта</span>
 <span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow">→</span>
 </a>
 <div class="card disabled">
 <span class="card-text">
-<span class="card-name">Бар All-in-One ХиП</span>
+<span class="card-name">Бар</span>
 <span class="card-date">27.07.2026</span>
 </span>
 </div>
 </div>
+</section>
+
+<section class="rest-block">
+<h2 class="rest-name">Пхали-Хинкали</h2>
+<div class="divider"></div>
+<div class="cards">
+<div class="card disabled">
+<span class="card-text">
+<span class="card-name">Чайная карта</span>
+</span>
 </div>
-<footer>d.b wish</footer>
+<div class="card disabled">
+<span class="card-text">
+<span class="card-name">Бар</span>
+</span>
+</div>
+</div>
+</section>
+
+</div>
+<footer style="font-family:'Fraunces',serif; font-style:italic; font-size:.8rem; letter-spacing:.04em; color:var(--accent-ink); border:none; padding:0;">d.b wish</footer>
 </body>
 </html>

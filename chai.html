@@ -44,11 +44,12 @@
   }
 
   header.topbar{
-    position:sticky; top:0; z-index:20;
+    position:fixed; top:0; left:0; right:0; z-index:20;
     background:rgba(237,231,229,0.96);
     border-bottom:1px solid var(--line);
     padding:12px 14px 10px;
   }
+  #header-spacer{height:196px;}
   .brand{display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:14px; text-align:center;}
   .brand h1{
     font-family:'Manrope',system-ui,sans-serif; font-size:1.7rem; font-weight:700; margin:0;
@@ -239,6 +240,20 @@
 <span id="count">Всего рецептов и позиций: 62</span>
 <nav class="pills"><label class="pill" for="tab-all">Все<span class="n">62</span></label><label class="pill" for="tab-cold" style="--dot:var(--c-cold)">Холодные чаи<span class="n">6</span></label><label class="pill" for="tab-detox" style="--dot:var(--c-detox)">Детоксы<span class="n">4</span></label><label class="pill" for="tab-fruit" style="--dot:var(--c-fruit)">Фруктовые тизаны<span class="n">9</span></label><label class="pill" for="tab-milk" style="--dot:var(--c-milk)">Чаи на молоке и соке<span class="n">6</span></label><label class="pill" for="tab-classic" style="--dot:var(--c-classic)">Классика и пуэры<span class="n">27</span></label><label class="pill" for="tab-summer" style="--dot:var(--c-summer)">Спец лето<span class="n">4</span></label><label class="pill" for="tab-toppings" style="--dot:var(--c-toppings)">Топинги (отдельно)<span class="n">6</span></label></nav>
 </header>
+<div id="header-spacer"></div>
+<script>
+(function(){
+  var header = document.querySelector('header.topbar');
+  var spacer = document.getElementById('header-spacer');
+  function sync(){ if(header && spacer){ spacer.style.height = header.offsetHeight + 'px'; } }
+  sync();
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', sync);
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(sync); }
+  if (window.ResizeObserver) { new ResizeObserver(sync).observe(header); }
+  else { setTimeout(sync, 300); }
+})();
+</script>
 <noscript><p style="margin:14px 14px 0;">Поиск работает только с включённым JavaScript. Категории вверху и раскрытие карточек работают в любом просмотрщике, JS для них не нужен.</p></noscript>
 <main id="app">
 <section class="category" data-cat="cold" style="--dot:var(--c-cold)">
