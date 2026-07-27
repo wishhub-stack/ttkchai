@@ -5,7 +5,7 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
 <title>Меню · Хачо и Пури / Пхали-Хинкали</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;family=Unbounded:wght@700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <style>
   :root{
     --bg:#EDE7E5;
@@ -51,6 +51,8 @@
      a light .37-opacity tint over bg-chai.jpg, so the ornament reads clearly instead
      of being washed out. */
   a.card.card-tea{
+    position:relative;
+    justify-content:center;
     background-color:var(--surface);
     background-image:linear-gradient(rgba(237,231,229,0.37), rgba(237,231,229,0.37)), url("bg-chai.jpg");
     background-size:230px auto, 230px auto;
@@ -58,10 +60,14 @@
     background-repeat:repeat, repeat;
   }
   .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
-  /* Bold display face matched to the logo-chai.png reference art for the tea-card label. */
-  .card-name-tea{
-    font-family:'Unbounded',sans-serif; font-weight:800; font-size:.92rem;
-    letter-spacing:-.01em; text-transform:uppercase; color:var(--ink);
+  /* Logo art (cropped straight from logo-chai.png, re-set as one line instead of two
+     so it fits the button), used in place of the plain text label. */
+  .card-text-center{display:flex; flex-direction:column; align-items:center; gap:7px; width:100%;}
+  .tea-logo{height:25px; width:auto; display:block;}
+  .tea-logo-muted{filter:grayscale(1) opacity(.5);}
+  .card-arrow-corner{
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace; font-size:1rem; color:var(--accent-ink);
   }
   .card-text{display:flex; flex-direction:column; gap:3px;}
   .card-date{
@@ -76,7 +82,6 @@
     padding:16px 18px; color:var(--muted); cursor:default;
   }
   .card.disabled .card-name{color:var(--muted); font-weight:400;}
-  .card.disabled .card-name-tea{color:var(--muted);}
 
   footer{
     max-width:520px; margin:36px auto 0; padding:0 18px; color:var(--muted);
@@ -128,11 +133,11 @@
 <div class="divider"></div>
 <div class="cards">
 <a class="card card-tea" href="chai.html">
-<span class="card-text">
-<span class="card-name card-name-tea">Чайная карта</span>
+<span class="card-text-center">
+<img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
 <span class="card-date">27.07.2026</span>
 </span>
-<span class="card-arrow">→</span>
+<span class="card-arrow-corner">→</span>
 </a>
 <div class="card disabled">
 <span class="card-text">
@@ -148,8 +153,8 @@
 <div class="divider"></div>
 <div class="cards">
 <div class="card disabled">
-<span class="card-text">
-<span class="card-name card-name-tea">Чайная карта</span>
+<span class="card-text-center">
+<img class="tea-logo tea-logo-muted" src="logo-chai-wide.png" alt="Чайная карта"/>
 </span>
 </div>
 <div class="card disabled">
