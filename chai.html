@@ -30,7 +30,7 @@
   html,body{margin:0;padding:0;}
   body{
     background-color:var(--bg);
-    background-image:linear-gradient(rgba(237,231,229,0.7), rgba(237,231,229,0.7)), url("bg-chai.jpg");
+    background-image:linear-gradient(rgba(237,231,229,0.37), rgba(237,231,229,0.37)), url("bg-chai.jpg");
     background-size:460px auto, 460px auto;
     background-position:top center, top center;
     background-repeat:repeat, repeat;
@@ -131,13 +131,17 @@
     transition:transform .15s ease; flex:0 0 auto;
   }
   details.card[open] .chev{transform:rotate(180deg);}
-  /* Smooth open/close for the card content (CSS-only, no JS needed) */
+  /* Open/close animation: JS measures the real pixel height and transitions
+     that, instead of animating grid-template-rows — interpolating a fr-track
+     forces the browser to re-measure the (table-heavy) content every frame,
+     which is what made the old animation look choppy. A plain height
+     transition only needs the two endpoints, so it stays smooth. */
   .card-content{
-    display:grid; grid-template-rows:0fr;
-    transition:grid-template-rows .34s cubic-bezier(.16,1,.3,1);
+    height:0; overflow:hidden;
+    transition:height .32s cubic-bezier(.4,0,.2,1);
   }
-  details.card[open] .card-content{grid-template-rows:1fr;}
-  .card-content-inner{overflow:hidden;}
+  details.card[open] .card-content{height:auto;} /* no-JS fallback: snaps open instantly */
+  .card-content-inner{overflow:hidden; contain:content;}
   .badges{display:flex; flex-wrap:wrap; gap:5px; padding:0 12px 11px;}
   .badge{
     font-family:'IBM Plex Mono',monospace; font-size:.68rem; font-weight:600;
@@ -781,6 +785,14 @@
 
   function norm(s){ return (s||'').toLowerCase(); }
 
+  // Splits the query into fragments on spaces so "обл гру" matches
+  // "облепиха с грушей" — every fragment just needs to appear somewhere
+  // in the item's search text, in any order.
+  function matchesQuery(text, tokens){
+    if(tokens.length === 0) return true;
+    return tokens.every(t => text.includes(t));
+  }
+
   function activeCat(){
     const checked = document.querySelector('input.tab-radio:checked');
     return checked ? checked.id.replace('tab-','') : 'all';
@@ -789,6 +801,7 @@
   function applyFilters(){
     const cat = activeCat();
     const q = norm(search.value.trim());
+    const tokens = q.split(/\s+/).filter(Boolean);
     let totalVisible = 0;
     let totalAll = 0;
 
@@ -799,7 +812,7 @@
 
       section.querySelectorAll(':scope > details.card').forEach(card=>{
         totalAll++;
-        const match = catActive && (q==='' || (card.dataset.search||'').includes(q));
+        const match = catActive && matchesQuery(card.dataset.search||'', tokens);
         card.classList.toggle('js-hidden', !match);
         if(match){ sectionVisible++; totalVisible++; }
       });
@@ -808,7 +821,7 @@
         let groupVisible = 0;
         group.querySelectorAll('tbody tr').forEach(tr=>{
           totalAll++;
-          const match = catActive && (q==='' || (tr.dataset.search||'').includes(q));
+          const match = catActive && matchesQuery(tr.dataset.search||'', tokens);
           tr.classList.toggle('js-hidden', !match);
           if(match){ groupVisible++; totalVisible++; }
         });
@@ -836,6 +849,14 @@
     }
     applyFilters();
   });
+  // Starting a fresh search after finding something earlier shouldn't require
+  // manually clearing the old query first — refocusing the field wipes it.
+  search.addEventListener('focus', ()=>{
+    if(search.value !== ''){
+      search.value = '';
+      applyFilters();
+    }
+  });
   radios.forEach(r=> r.addEventListener('change', ()=>{
     if(search.value !== ''){ search.value = ''; }
     applyFilters();
@@ -850,8 +871,9 @@
 </script>
 <script>
 (function(){
-  // Cards are closed by default; tapping a summary opens/closes it with a
-  // smooth animation. Each card toggles independently, not exclusively.
+  // Cards are closed by default; tapping a summary opens it with a smooth
+  // animation and closes any other card that was open, so only one TTK is
+  // visible on screen at a time.
   const cards = Array.from(document.querySelectorAll('details.card'));
 
   function contentOf(d){ return d.querySelector(':scope > .card-content'); }
@@ -873,14 +895,20 @@
     if(!d.hasAttribute('open')) return;
     const content = contentOf(d);
     if(!content) { d.removeAttribute('open'); return; }
-    content.style.transition = 'grid-template-rows .22s cubic-bezier(.4,0,1,1)';
-    content.style.gridTemplateRows = '0fr';
+    const current = content.scrollHeight;
+    content.style.willChange = 'height';
+    content.style.transition = 'none';
+    content.style.height = current + 'px';
+    content.getBoundingClientRect(); // force reflow so the start height is registered
+    content.style.transition = 'height .28s cubic-bezier(.65,0,.35,1)';
+    requestAnimationFrame(()=>{ content.style.height = '0px'; });
     const onEnd = (e)=>{
-      if(e.target !== content) return;
+      if(e.target !== content || e.propertyName !== 'height') return;
       content.removeEventListener('transitionend', onEnd);
       d.removeAttribute('open');
       content.style.transition = '';
-      content.style.gridTemplateRows = '';
+      content.style.height = '';
+      content.style.willChange = '';
     };
     content.addEventListener('transitionend', onEnd);
   }
@@ -890,16 +918,19 @@
     d.setAttribute('open', '');
     const content = contentOf(d);
     if(!content) return;
+    content.style.willChange = 'height';
     content.style.transition = 'none';
-    content.style.gridTemplateRows = '0fr';
-    content.getBoundingClientRect(); // force reflow so the 0fr start is registered
-    content.style.transition = 'grid-template-rows .34s cubic-bezier(.16,1,.3,1)';
-    requestAnimationFrame(()=>{ content.style.gridTemplateRows = '1fr'; });
+    content.style.height = '0px';
+    content.getBoundingClientRect(); // force reflow so the 0px start is registered
+    const target = content.scrollHeight;
+    content.style.transition = 'height .36s cubic-bezier(.65,0,.35,1)';
+    requestAnimationFrame(()=>{ content.style.height = target + 'px'; });
     const onEnd = (e)=>{
-      if(e.target !== content) return;
+      if(e.target !== content || e.propertyName !== 'height') return;
       content.removeEventListener('transitionend', onEnd);
       content.style.transition = '';
-      content.style.gridTemplateRows = '';
+      content.style.height = 'auto';
+      content.style.willChange = '';
       scrollCardIntoView(d);
     };
     content.addEventListener('transitionend', onEnd);
@@ -911,7 +942,13 @@
     summary.addEventListener('click', (e)=>{
       e.preventDefault();
       const willOpen = !d.hasAttribute('open');
-      if(willOpen) openCard(d); else closeCard(d);
+      if(willOpen){
+        // Opening one card closes any others so only one TTK is visible at a time.
+        cards.forEach(other=>{ if(other !== d) closeCard(other); });
+        openCard(d);
+      } else {
+        closeCard(d);
+      }
     });
   });
 })();
