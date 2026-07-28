@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
+<meta content="#EDE7E5" name="theme-color"/>
 <title>Чайная карта · 2026</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
@@ -13,7 +14,7 @@
     --surface:#FBF9F8;
     --surface-2:#F3EDEC;
     --ink:#332C2C;
-    --muted:#8C7E7E;
+    --muted:#6D6262;
     --line:#DED4D2;
     --accent:#B7A8A8;
     --accent-ink:#6B5858;
@@ -39,7 +40,7 @@
     -webkit-font-smoothing:antialiased;
     padding-bottom:48px;
   }
-  h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+  h1,h2,h3{font-family:'Fraunces',serif;}
 
   /* Hidden radio inputs driving the CSS-only category tabs — work even with JS blocked. */
   .tab-radio{
@@ -229,6 +230,44 @@
 #tab-toppings:checked ~ #scroll-area main .category:not([data-cat="toppings"]){display:none;}
 #tab-toppings:checked ~ header label[for="tab-toppings"]{background:var(--dot);border-color:var(--dot);color:#fff;}
 #tab-all:checked ~ header label[for="tab-all"]{background:var(--accent-ink);border-color:var(--accent-ink);color:#fff;}
+
+  /* ---------- Signature: tap "d.b wish" and contact details fade in beneath it ---------- */
+  .sig{border:none; padding:0; margin-top:8px; text-align:center;}
+  .sig-input{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+    clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
+  }
+  .sig-name{
+    display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem;
+    letter-spacing:.04em; color:var(--accent-ink); cursor:pointer;
+    padding:4px 3px; border-bottom:1px dotted transparent;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  @media (hover:hover){
+    .sig-name:hover{ border-color:var(--accent-ink); }
+  }
+  .sig-reveal{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    max-height:0; opacity:0; filter:blur(6px); transform:translateY(-4px) scale(.96);
+    overflow:hidden; pointer-events:none;
+    transition:max-height 1.15s cubic-bezier(.16,1,.3,1),
+               opacity 1.05s ease .12s,
+               filter 1.05s ease .12s,
+               transform 1.1s cubic-bezier(.16,1,.3,1) .08s;
+  }
+  .sig-input:checked ~ .sig-reveal{
+    max-height:70px; opacity:1; filter:blur(0); transform:translateY(0) scale(1);
+    pointer-events:auto; margin-top:6px;
+  }
+  .sig-tg{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:.8rem;
+    letter-spacing:.03em; color:var(--accent-ink); text-decoration:none;
+    border-bottom:1px dotted var(--accent);
+  }
+  .sig-caption{
+    font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
+    max-width:260px; line-height:1.45;
+  }
 </style>
 </head>
 <body>
@@ -773,7 +812,14 @@
 </main>
 <footer>
   Справочник собран на основе файла ТТК_ХиП_2026.xlsx для работников сети ресторанов MKS «Хачо и Пури» и «Пхали-Хинкали».
-  <p style="margin-top:28px; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem; letter-spacing:.04em; color:var(--accent-ink);">d.b wish</p>
+</footer>
+<footer class="sig">
+  <input type="checkbox" id="sig-toggle" class="sig-input"/>
+  <label for="sig-toggle" class="sig-name">d.b wish</label>
+  <div class="sig-reveal">
+    <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
+    <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
+  </div>
 </footer>
 </div>
 <script>
