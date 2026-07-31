@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
+<meta content="#161210" name="theme-color"/>
+<title>Wish Ember · Хачо и Пури / Пхали-Хинкали</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --page-bg:#161210;
+    --panel-bg:#1B1613;
+    --panel-line:#2C221B;
+    --ink:#F4ECDF;
+    --muted:#96877A;
+    --accent:#C88A4E;
+    --accent-line:rgba(200,138,78,0.30);
+
+    --tea-surface:#F4ECDF;
+    --tea-ink:#332C2C;
+    --tea-muted:#6D6262;
+
+    --bar-surface:#241611;
+    --bar-line:rgba(200,138,78,0.28);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page-bg);
+    color:var(--ink);
+    font-family:'Manrope',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:48px 16px 60px;
+  }
+  .wrap{max-width:520px; margin:0 auto;}
+
+  /* ---------- Brand header ---------- */
+  .brand{text-align:center; margin-bottom:40px;}
+  .brand-title{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:500;
+    font-size:2.1rem; margin:0; color:var(--ink); letter-spacing:.01em;
+  }
+  .brand-tagline{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.09em;
+    color:var(--muted); margin:8px 0 0;
+  }
+  .brand-tagline .plus{color:var(--accent);}
+
+  /* ---------- Restaurant panel ---------- */
+  .rest-panel{
+    background:var(--panel-bg); border:1px solid var(--panel-line); border-radius:20px;
+    padding:22px 18px 20px; margin-bottom:24px;
+  }
+  .rest-panel:last-child{margin-bottom:0;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.64rem; letter-spacing:.12em;
+    color:var(--accent); text-align:center; text-transform:uppercase; margin:0 0 10px;
+  }
+  .rest-name{
+    font-family:'Manrope',sans-serif; font-size:1.32rem; font-weight:700; margin:0;
+    letter-spacing:-.02em; line-height:1.15; text-align:center; color:var(--ink);
+  }
+  .rest-logo{height:56px; width:auto; display:block; margin:0 auto;}
+  .divider{
+    width:100%; height:1px; background:var(--panel-line); margin:16px 0 16px;
+  }
+  .cards{display:flex; flex-direction:column; gap:10px;}
+
+  a.card{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border-radius:14px;
+    padding:16px 18px; text-decoration:none;
+    transition:border-color .15s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  @media (hover:hover){
+    a.card:hover{ transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,0.28); }
+  }
+
+  /* Tea card: the bright cream identity, with the recolored medallion texture as a
+     faint watermark so the ornament reads without fighting the logo. */
+  a.card.card-tea{
+    position:relative; justify-content:center;
+    background-color:var(--tea-surface);
+    background-image:linear-gradient(rgba(244,236,223,0.45), rgba(244,236,223,0.45)), url("bg-chai.jpg");
+    background-size:230px auto, 230px auto;
+    background-position:center, center;
+    background-repeat:repeat, repeat;
+    color:var(--tea-ink);
+  }
+  .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
+  .card-text-center{display:flex; flex-direction:column; align-items:center; gap:7px; width:100%;}
+  .tea-logo{height:25px; width:auto; display:block;}
+  .tea-logo-muted{filter:grayscale(1) opacity(.5);}
+  .card-arrow-corner{
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace; font-size:1rem; color:var(--tea-muted);
+  }
+  .card-text{display:flex; flex-direction:column; gap:3px;}
+  .card-date{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.04em;
+    color:var(--tea-muted);
+  }
+
+  /* Bar card: the copper-warmed dark identity, cocktail-line watermark texture.
+     Shown with full brand confidence even before it's clickable — it's the one
+     actively being built right now, so it previews as "almost here", not "empty". */
+  .card.card-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background-color:var(--bar-surface);
+    background-image:linear-gradient(rgba(36,22,17,0.32), rgba(36,22,17,0.32)), url("bg-bar.jpg");
+    background-size:190px auto, 190px auto;
+    background-position:center, center;
+    background-repeat:repeat, repeat;
+    border:1px solid var(--bar-line);
+    border-radius:14px; padding:16px 18px; cursor:default;
+  }
+  .card.card-bar .card-name{color:var(--ink); font-weight:500;}
+  .card.card-bar .card-date{color:var(--accent);}
+  .card.card-bar .card-arrow-corner{
+    position:static; transform:none; color:var(--accent); font-size:1rem;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  /* Plain "nothing here yet" placeholder — used only where a section genuinely
+     hasn't been started (Пхали-Хинкали, both cards). */
+  .card.disabled{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:transparent; border:1.5px dashed var(--panel-line); border-radius:14px;
+    padding:16px 18px; color:var(--muted); cursor:default;
+  }
+  .card.disabled .card-name{color:var(--muted); font-weight:400;}
+  .card.disabled .card-date{color:var(--muted);}
+
+  footer{
+    max-width:520px; margin:36px auto 0; padding:0 18px; color:var(--muted);
+    font-size:.74rem; line-height:1.5; text-align:center;
+  }
+
+  /* ---------- Signature: tap "d.b wish" and contact details fade in beneath it ---------- */
+  .sig{border:none; padding:0; margin-top:36px; text-align:center;}
+  .sig-input{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+    clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
+  }
+  .sig-name{
+    display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem;
+    letter-spacing:.04em; color:var(--accent); cursor:pointer;
+    padding:4px 3px; border-bottom:1px dotted transparent;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  @media (hover:hover){
+    .sig-name:hover{ border-color:var(--accent); }
+  }
+  .sig-reveal{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    max-height:0; opacity:0; filter:blur(6px); transform:translateY(-4px) scale(.96);
+    overflow:hidden; pointer-events:none;
+    transition:max-height 1.15s cubic-bezier(.16,1,.3,1),
+               opacity 1.05s ease .12s,
+               filter 1.05s ease .12s,
+               transform 1.1s cubic-bezier(.16,1,.3,1) .08s;
+  }
+  .sig-input:checked ~ .sig-reveal{
+    max-height:70px; opacity:1; filter:blur(0); transform:translateY(0) scale(1);
+    pointer-events:auto; margin-top:6px;
+  }
+  .sig-tg{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:.8rem;
+    letter-spacing:.03em; color:var(--accent); text-decoration:none;
+    border-bottom:1px dotted var(--accent-line);
+  }
+  .sig-caption{
+    font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
+    max-width:260px; line-height:1.45;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="brand">
+  <h1 class="brand-title">Wish Ember</h1>
+  <p class="brand-tagline">тёплый уголь <span class="plus">+</span> медный бар</p>
+</header>
+
+<section class="rest-panel">
+<p class="eyebrow">Главное меню</p>
+<h2 class="rest-name"><img class="rest-logo" src="logo-hacho-puri-light.png" alt="Хачо и Пури"/></h2>
+<div class="divider"></div>
+<div class="cards">
+<a class="card card-tea" href="chai.html">
+<span class="card-text-center">
+<img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
+<span class="card-date">27.07.2026</span>
+</span>
+<span class="card-arrow-corner">→</span>
+</a>
+<div class="card card-bar">
+<span class="card-text">
+<span class="card-name">Барная карта</span>
+<span class="card-date">Скоро</span>
+</span>
+<span class="card-arrow-corner">→</span>
+</div>
+</div>
+</section>
+
+<section class="rest-panel">
+<p class="eyebrow">Главное меню</p>
+<h2 class="rest-name">Пхали-Хинкали</h2>
+<div class="divider"></div>
+<div class="cards">
+<div class="card disabled">
+<span class="card-text-center">
+<img class="tea-logo tea-logo-muted" src="logo-chai-wide.png" alt="Чайная карта"/>
+<span class="card-date">Скоро</span>
+</span>
+</div>
+<div class="card disabled">
+<span class="card-text">
+<span class="card-name">Барная карта</span>
+<span class="card-date">Скоро</span>
+</span>
+</div>
+</div>
+</section>
+
+</div>
+
+<footer class="sig">
+  <input type="checkbox" id="sig-toggle" class="sig-input"/>
+  <label for="sig-toggle" class="sig-name">d.b wish</label>
+  <div class="sig-reveal">
+    <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
+    <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
+  </div>
+</footer>
+
+</body>
+</html>
