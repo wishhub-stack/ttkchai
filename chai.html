@@ -9,8 +9,6 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <style>
-  @view-transition{ navigation:auto; }
-
   :root{
     --bg:#F4ECDF;
     --surface:#FBF9F8;
@@ -57,16 +55,14 @@
   header.topbar{
     border-bottom:1px solid var(--line);
     padding:12px 14px 10px;
-    view-transition-name:chai-bg;
   }
   .brand{display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:14px; text-align:center;}
   .brand h1{margin:0;}
-  .brand-logo{height:42px; width:auto; display:block; view-transition-name:chai-logo;}
+  .brand-logo{height:42px; width:auto; display:block;}
   .brand .tag{
     font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.09em;
     color:var(--muted); text-transform:uppercase; border:none;
     border-radius:0; padding:0; background:none;
-    view-transition-name:chai-date;
   }
   .search-row{position:relative; margin-bottom:12px;}
   #search{
@@ -272,21 +268,41 @@
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
   }
-
-  /* Тайминг морфа карточка → шапка (эти правила действуют, когда переход
-     идёт НА эту страницу — то есть при заходе с главной). */
-  ::view-transition-group(chai-bg),
-  ::view-transition-group(chai-logo),
-  ::view-transition-group(chai-date){
-    animation-duration:.46s;
-    animation-timing-function:cubic-bezier(.4,0,.2,1);
-  }
-  @media (prefers-reduced-motion:reduce){
-    ::view-transition-group(*){ animation:none !important; }
-  }
 </style>
 </head>
 <body>
+<script>
+(function(){
+  // Если пришли по анимированному переходу с главной — сразу же (до отрисовки
+  // остального) ставим "занавес" в цвет страницы, который затем плавно растает,
+  // проявляя шапку/поиск/карточки. Обычный DOM + CSS, без спецфич браузера —
+  // поэтому одинаково исправно в Safari, Chrome и Telegram in-app браузере.
+  var entering = false;
+  try{ entering = sessionStorage.getItem('fly:chai.html') === '1'; sessionStorage.removeItem('fly:chai.html'); }catch(e){}
+  if(entering){
+    var veil = document.createElement('div');
+    veil.id = 'enter-veil';
+    veil.style.cssText =
+      'position:fixed;inset:0;z-index:99999;pointer-events:none;' +
+      'background-color:#F4ECDF;' +
+      'background-image:linear-gradient(rgba(244,236,223,0.37), rgba(244,236,223,0.37)), url("bg-chai.jpg");' +
+      'background-size:460px auto, 460px auto;background-position:top center, top center;background-repeat:repeat, repeat;' +
+      'opacity:1;transition:opacity .6s cubic-bezier(.4,0,.2,1);';
+    document.body.appendChild(veil);
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function reveal(){
+      if(reduceMotion){ veil.remove(); return; }
+      veil.style.opacity = '0';
+      veil.addEventListener('transitionend', function(){ veil.remove(); }, {once:true});
+      setTimeout(function(){ if(veil.parentNode) veil.remove(); }, 900); // страховка
+    }
+    window.addEventListener('load', function(){
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 160); }); });
+    });
+  }
+})();
+</script>
 <input checked="" class="tab-radio" id="tab-all" name="cat" type="radio"/><input class="tab-radio" id="tab-cold" name="cat" type="radio"/><input class="tab-radio" id="tab-detox" name="cat" type="radio"/><input class="tab-radio" id="tab-fruit" name="cat" type="radio"/><input class="tab-radio" id="tab-milk" name="cat" type="radio"/><input class="tab-radio" id="tab-classic" name="cat" type="radio"/><input class="tab-radio" id="tab-summer" name="cat" type="radio"/><input class="tab-radio" id="tab-toppings" name="cat" type="radio"/>
 <header class="topbar">
 <div class="brand">

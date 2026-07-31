@@ -8,12 +8,6 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <style>
-  /* Плавный "переход" в чайную карту: карточка морфит в шапку следующей
-     страницы средствами самого браузера (Cross-Document View Transitions).
-     Там, где это не поддерживается (iOS Safari, Telegram in-app на iOS),
-     переход остаётся обычным мгновенным — как было раньше, без поломок. */
-  @view-transition{ navigation:auto; }
-
   :root{
     --page-bg:#161210;
     --panel-bg:#1B1613;
@@ -83,14 +77,11 @@
     background-position:center, center;
     background-repeat:repeat, repeat;
     color:var(--tea-ink);
-    view-transition-name:chai-bg;
-    contain:layout;
   }
   .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
   .card-text-center{display:flex; flex-direction:column; align-items:center; gap:7px; width:100%;}
   .tea-logo{height:25px; width:auto; display:block;}
   .tea-logo-muted{filter:grayscale(1) opacity(.5);}
-  a.card.card-tea .tea-logo{view-transition-name:chai-logo;}
   .card-arrow-corner{
     position:absolute; right:16px; top:50%; transform:translateY(-50%);
     font-family:'IBM Plex Mono',monospace; font-size:1rem; color:var(--tea-muted);
@@ -100,27 +91,20 @@
     font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.04em;
     color:var(--tea-muted);
   }
-  a.card.card-tea .card-date{view-transition-name:chai-date;}
 
-  /* Bar card: the copper-warmed dark identity, cocktail-line watermark texture.
-     Shown with full brand confidence even before it's clickable — it's the one
-     actively being built right now, so it previews as "almost here", not "empty". */
-  .card.card-bar{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  /* Bar card: the copper-warmed dark identity, cocktail-line watermark texture. */
+  a.card.card-bar{
+    position:relative; justify-content:center;
     background-color:var(--bar-surface);
     background-image:linear-gradient(rgba(36,22,17,0.32), rgba(36,22,17,0.32)), url("bg-bar.jpg");
     background-size:190px auto, 190px auto;
     background-position:center, center;
     background-repeat:repeat, repeat;
     border:1px solid var(--bar-line);
-    border-radius:14px; padding:16px 18px; cursor:default;
   }
-  .card.card-bar .card-name{color:var(--ink); font-weight:500;}
-  .card.card-bar .card-date{color:var(--accent);}
-  .card.card-bar .card-arrow-corner{
-    position:static; transform:none; color:var(--accent); font-size:1rem;
-    font-family:'IBM Plex Mono',monospace;
-  }
+  .bar-logo{height:26px; width:auto; display:block;}
+  a.card.card-bar .card-date{color:var(--accent);}
+  a.card.card-bar .card-arrow-corner{color:var(--accent);}
 
   /* Plain "nothing here yet" placeholder — used only where a section genuinely
      hasn't been started (Пхали-Хинкали, both cards). */
@@ -174,18 +158,6 @@
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
   }
-
-  /* Тайминг морфа карточка → шапка. Эти правила действуют, когда переход
-     идёт НА эту страницу (например, при возврате из чайной карты назад). */
-  ::view-transition-group(chai-bg),
-  ::view-transition-group(chai-logo),
-  ::view-transition-group(chai-date){
-    animation-duration:.46s;
-    animation-timing-function:cubic-bezier(.4,0,.2,1);
-  }
-  @media (prefers-reduced-motion:reduce){
-    ::view-transition-group(*){ animation:none !important; }
-  }
 </style>
 </head>
 <body>
@@ -203,13 +175,13 @@
 </span>
 <span class="card-arrow-corner">→</span>
 </a>
-<div class="card card-bar">
-<span class="card-text">
-<span class="card-name">Барная карта</span>
-<span class="card-date">Скоро</span>
+<a class="card card-bar" href="bar.html">
+<span class="card-text-center">
+<img class="bar-logo" src="logo-bar-wide-light.png" alt="Барная карта"/>
+<span class="card-date">Демо</span>
 </span>
 <span class="card-arrow-corner">→</span>
-</div>
+</a>
 </div>
 </section>
 
@@ -243,6 +215,111 @@
     <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
   </div>
 </footer>
+
+<script>
+(function(){
+  var EASE = 'cubic-bezier(.4,0,.2,1)';
+  var PHASE1_MS = 620;   // подъём наверх + уменьшение надписи
+  var PHASE2_MS = 560;   // заливка всего экрана цветом
+
+  function attachFly(link){
+    link.addEventListener('click', function(e){
+      // Открытие в новой вкладке / модификаторы — не трогаем, пусть работает как обычная ссылка
+      if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduceMotion) return; // обычный переход без анимации
+
+      e.preventDefault();
+      var targetHref = link.getAttribute('href');
+
+      var rect = link.getBoundingClientRect();
+      var clone = link.cloneNode(true);
+      clone.removeAttribute('href');
+      clone.style.position = 'fixed';
+      clone.style.margin = '0';
+      clone.style.top = rect.top + 'px';
+      clone.style.left = rect.left + 'px';
+      clone.style.width = rect.width + 'px';
+      clone.style.height = rect.height + 'px';
+      clone.style.zIndex = '99999';
+      clone.style.pointerEvents = 'none';
+      clone.style.borderRadius = getComputedStyle(link).borderRadius;
+      clone.style.transition =
+        'top ' + PHASE1_MS + 'ms ' + EASE + ',' +
+        'left ' + PHASE1_MS + 'ms ' + EASE + ',' +
+        'width ' + PHASE1_MS + 'ms ' + EASE + ',' +
+        'height ' + PHASE1_MS + 'ms ' + EASE + ',' +
+        'border-radius ' + PHASE1_MS + 'ms ' + EASE;
+
+      document.body.appendChild(clone);
+      link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
+
+      var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
+      var cloneDate = clone.querySelector('.card-date');
+      var cloneArrow = clone.querySelector('.card-arrow-corner');
+
+      if(cloneArrow){
+        cloneArrow.style.transition = 'opacity .25s ease';
+        cloneArrow.style.opacity = '0';
+      }
+      if(cloneLogo){
+        cloneLogo.style.transition = 'height ' + PHASE1_MS + 'ms ' + EASE;
+      }
+      if(cloneDate){
+        cloneDate.style.transition = 'font-size ' + PHASE1_MS + 'ms ' + EASE;
+      }
+
+      function goToPage(){
+        try{ sessionStorage.setItem('fly:' + targetHref, '1'); }catch(err){}
+        window.location.href = targetHref;
+      }
+
+      // форсируем рефлоу, чтобы браузер зафиксировал стартовое состояние перед стартом фазы 1
+      void clone.offsetHeight;
+
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          // ФАЗА 1 — карточка едет наверх и превращается в тонкую полосу-шапку, надпись уменьшается
+          var headerHeight = Math.max(84, Math.min(112, window.innerHeight * 0.16));
+          clone.style.top = '0px';
+          clone.style.left = '0px';
+          clone.style.width = window.innerWidth + 'px';
+          clone.style.height = headerHeight + 'px';
+          clone.style.borderRadius = '0px';
+          if(cloneLogo) cloneLogo.style.height = '17px';
+          if(cloneDate) cloneDate.style.fontSize = '.56rem';
+
+          setTimeout(function(){
+            // ФАЗА 2 — полоса заливает своим цветом весь экран
+            clone.style.transition =
+              'top ' + PHASE2_MS + 'ms ' + EASE + ',' +
+              'left ' + PHASE2_MS + 'ms ' + EASE + ',' +
+              'width ' + PHASE2_MS + 'ms ' + EASE + ',' +
+              'height ' + PHASE2_MS + 'ms ' + EASE;
+            if(cloneLogo) cloneLogo.style.transition = 'opacity .22s ease';
+            if(cloneDate) cloneDate.style.transition = 'opacity .22s ease';
+            if(cloneLogo) cloneLogo.style.opacity = '0';
+            if(cloneDate) cloneDate.style.opacity = '0';
+
+            requestAnimationFrame(function(){
+              clone.style.top = '0px';
+              clone.style.left = '0px';
+              clone.style.width = window.innerWidth + 'px';
+              clone.style.height = window.innerHeight + 'px';
+
+              setTimeout(goToPage, PHASE2_MS + 40);
+            });
+          }, PHASE1_MS + 20);
+        });
+      });
+    });
+  }
+
+  var flyLinks = document.querySelectorAll('a.card.card-tea, a.card.card-bar');
+  for(var i = 0; i < flyLinks.length; i++){ attachFly(flyLinks[i]); }
+})();
+</script>
 
 </body>
 </html>
