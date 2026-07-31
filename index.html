@@ -36,23 +36,12 @@
   }
   .wrap{max-width:520px; margin:0 auto;}
 
-  /* ---------- Brand header ---------- */
-  .brand{text-align:center; margin-bottom:40px;}
-  .brand-title{
-    font-family:'Fraunces',serif; font-style:italic; font-weight:500;
-    font-size:2.1rem; margin:0; color:var(--ink); letter-spacing:.01em;
-  }
-  .brand-tagline{
-    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.09em;
-    color:var(--muted); margin:8px 0 0;
-  }
-  .brand-tagline .plus{color:var(--accent);}
-
   /* ---------- Restaurant panel ---------- */
   .rest-panel{
     background:var(--panel-bg); border:1px solid var(--panel-line); border-radius:20px;
     padding:22px 18px 20px; margin-bottom:24px;
   }
+  .rest-panel:first-child{margin-top:0;}
   .rest-panel:last-child{margin-bottom:0;}
   .eyebrow{
     font-family:'IBM Plex Mono',monospace; font-size:.64rem; letter-spacing:.12em;
@@ -179,11 +168,6 @@
 </head>
 <body>
 <div class="wrap">
-
-<header class="brand">
-  <h1 class="brand-title">Wish Ember</h1>
-  <p class="brand-tagline">тёплый уголь <span class="plus">+</span> медный бар</p>
-</header>
 
 <section class="rest-panel">
 <p class="eyebrow">Главное меню</p>
