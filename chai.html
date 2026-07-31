@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <style>
+  @view-transition{ navigation:auto; }
+
   :root{
     --bg:#F4ECDF;
     --surface:#FBF9F8;
@@ -55,14 +57,16 @@
   header.topbar{
     border-bottom:1px solid var(--line);
     padding:12px 14px 10px;
+    view-transition-name:chai-bg;
   }
   .brand{display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:14px; text-align:center;}
   .brand h1{margin:0;}
-  .brand-logo{height:42px; width:auto; display:block;}
+  .brand-logo{height:42px; width:auto; display:block; view-transition-name:chai-logo;}
   .brand .tag{
     font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.09em;
     color:var(--muted); text-transform:uppercase; border:none;
     border-radius:0; padding:0; background:none;
+    view-transition-name:chai-date;
   }
   .search-row{position:relative; margin-bottom:12px;}
   #search{
@@ -267,6 +271,18 @@
   .sig-caption{
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
+  }
+
+  /* Тайминг морфа карточка → шапка (эти правила действуют, когда переход
+     идёт НА эту страницу — то есть при заходе с главной). */
+  ::view-transition-group(chai-bg),
+  ::view-transition-group(chai-logo),
+  ::view-transition-group(chai-date){
+    animation-duration:.46s;
+    animation-timing-function:cubic-bezier(.4,0,.2,1);
+  }
+  @media (prefers-reduced-motion:reduce){
+    ::view-transition-group(*){ animation:none !important; }
   }
 </style>
 </head>

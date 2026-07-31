@@ -8,6 +8,12 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
 <style>
+  /* Плавный "переход" в чайную карту: карточка морфит в шапку следующей
+     страницы средствами самого браузера (Cross-Document View Transitions).
+     Там, где это не поддерживается (iOS Safari, Telegram in-app на iOS),
+     переход остаётся обычным мгновенным — как было раньше, без поломок. */
+  @view-transition{ navigation:auto; }
+
   :root{
     --page-bg:#161210;
     --panel-bg:#1B1613;
@@ -77,11 +83,14 @@
     background-position:center, center;
     background-repeat:repeat, repeat;
     color:var(--tea-ink);
+    view-transition-name:chai-bg;
+    contain:layout;
   }
   .card-name{font-family:'Fraunces',serif; font-size:1.08rem; font-weight:500;}
   .card-text-center{display:flex; flex-direction:column; align-items:center; gap:7px; width:100%;}
   .tea-logo{height:25px; width:auto; display:block;}
   .tea-logo-muted{filter:grayscale(1) opacity(.5);}
+  a.card.card-tea .tea-logo{view-transition-name:chai-logo;}
   .card-arrow-corner{
     position:absolute; right:16px; top:50%; transform:translateY(-50%);
     font-family:'IBM Plex Mono',monospace; font-size:1rem; color:var(--tea-muted);
@@ -91,6 +100,7 @@
     font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.04em;
     color:var(--tea-muted);
   }
+  a.card.card-tea .card-date{view-transition-name:chai-date;}
 
   /* Bar card: the copper-warmed dark identity, cocktail-line watermark texture.
      Shown with full brand confidence even before it's clickable — it's the one
@@ -163,6 +173,18 @@
   .sig-caption{
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
+  }
+
+  /* Тайминг морфа карточка → шапка. Эти правила действуют, когда переход
+     идёт НА эту страницу (например, при возврате из чайной карты назад). */
+  ::view-transition-group(chai-bg),
+  ::view-transition-group(chai-logo),
+  ::view-transition-group(chai-date){
+    animation-duration:.46s;
+    animation-timing-function:cubic-bezier(.4,0,.2,1);
+  }
+  @media (prefers-reduced-motion:reduce){
+    ::view-transition-group(*){ animation:none !important; }
   }
 </style>
 </head>
