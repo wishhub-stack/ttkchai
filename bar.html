@@ -47,7 +47,7 @@
   }
   .brand{display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:10px; text-align:center;}
   .brand h1{margin:0;}
-  .brand-logo{height:50px; width:auto; display:block;}
+  .brand-logo{height:34px; width:auto; display:block;}
   .brand .tag{
     font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.09em;
     color:var(--accent); text-transform:uppercase;
@@ -153,8 +153,6 @@
     veil.style.cssText =
       'position:fixed;inset:0;z-index:99999;pointer-events:none;' +
       'background-color:#1B120D;' +
-      'background-image:linear-gradient(rgba(27,18,13,0.55), rgba(27,18,13,0.55)), url("bg-bar.jpg");' +
-      'background-size:420px auto, 420px auto;background-position:top center, top center;background-repeat:repeat, repeat;' +
       'opacity:1;transition:opacity .6s cubic-bezier(.4,0,.2,1);';
     document.body.appendChild(veil);
 
@@ -174,7 +172,7 @@
 <input checked="" class="tab-radio" id="tab-lemon" name="barcat" type="radio"/><input class="tab-radio" id="tab-cocktail" name="barcat" type="radio"/><input class="tab-radio" id="tab-calc" name="barcat" type="radio"/>
 <header class="topbar">
 <div class="brand">
-<h1><img alt="Барная карта" class="brand-logo" src="logo-bar-light.png"/></h1>
+<h1><img alt="Барная карта" class="brand-logo" src="logo-bar-wide-light.png"/></h1>
 <span class="tag">Тестовая версия</span>
 </div>
 <span class="tagline">Демо-страница: структура и переход уже готовы, содержимое разделов — впереди</span>

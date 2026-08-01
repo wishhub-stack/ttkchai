@@ -158,6 +158,15 @@
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
   }
+
+  /* При старте перехода весь остальной контент плавно уходит — в фокусе
+     остаётся только летящая карточка (клон, добавленный поверх). */
+  body.fly-active > .wrap,
+  body.fly-active > footer.sig{
+    transition:opacity .3s ease;
+    opacity:0;
+    pointer-events:none;
+  }
 </style>
 </head>
 <body>
@@ -168,14 +177,14 @@
 <h2 class="rest-name"><img class="rest-logo" src="logo-hacho-puri-light.png" alt="Хачо и Пури"/></h2>
 <div class="divider"></div>
 <div class="cards">
-<a class="card card-tea" href="chai.html">
+<a class="card card-tea" href="chai.html" data-final-logo-height="36">
 <span class="card-text-center">
 <img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
 <span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow-corner">→</span>
 </a>
-<a class="card card-bar" href="bar.html">
+<a class="card card-bar" href="bar.html" data-final-logo-height="34">
 <span class="card-text-center">
 <img class="bar-logo" src="logo-bar-wide-light.png" alt="Барная карта"/>
 <span class="card-date">Демо</span>
@@ -221,6 +230,14 @@
   var EASE = 'cubic-bezier(.4,0,.2,1)';
   var PHASE1_MS = 620;   // подъём наверх + уменьшение надписи
   var PHASE2_MS = 560;   // заливка всего экрана цветом
+  var TEXT_FADE_MS = 240; // сколько длится исчезновение надписи в конце фазы 2
+  var TEXT_FADE_DELAY = Math.max(0, PHASE2_MS - TEXT_FADE_MS); // держим надпись видимой почти до конца
+
+  // Список карточек, которые в момент ухода со страницы (например, через
+  // sessionStorage-переход) остались "подвешены" в летящем состоянии. Если
+  // браузер восстановит эту страницу из bfcache при нажатии "назад", здесь
+  // будет запись — и мы аккуратно соберём карточку обратно, без перезагрузки.
+  var activeFlights = [];
 
   function attachFly(link){
     link.addEventListener('click', function(e){
@@ -232,10 +249,15 @@
 
       e.preventDefault();
       var targetHref = link.getAttribute('href');
+      var finalLogoH = parseInt(link.getAttribute('data-final-logo-height'), 10) || 30;
+
+      document.body.classList.add('fly-active'); // остальной контент уходит
 
       var rect = link.getBoundingClientRect();
       var clone = link.cloneNode(true);
+      clone.classList.add('fly-clone');
       clone.removeAttribute('href');
+      clone.removeAttribute('data-final-logo-height');
       clone.style.position = 'fixed';
       clone.style.margin = '0';
       clone.style.top = rect.top + 'px';
@@ -245,6 +267,9 @@
       clone.style.zIndex = '99999';
       clone.style.pointerEvents = 'none';
       clone.style.borderRadius = getComputedStyle(link).borderRadius;
+      // убираем узор фона на время полёта — при растяжении плитка узора даёт
+      // заметные швы; сплошной цвет летит идеально гладко
+      clone.style.backgroundImage = 'none';
       clone.style.transition =
         'top ' + PHASE1_MS + 'ms ' + EASE + ',' +
         'left ' + PHASE1_MS + 'ms ' + EASE + ',' +
@@ -254,6 +279,7 @@
 
       document.body.appendChild(clone);
       link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
+      activeFlights.push({ link: link, clone: clone });
 
       var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
       var cloneDate = clone.querySelector('.card-date');
@@ -280,25 +306,27 @@
 
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
-          // ФАЗА 1 — карточка едет наверх и превращается в тонкую полосу-шапку, надпись уменьшается
+          // ФАЗА 1 — карточка едет наверх и превращается в тонкую полосу-шапку;
+          // надпись уменьшается ровно до размера, в котором она стоит в шапке назначения
           var headerHeight = Math.max(84, Math.min(112, window.innerHeight * 0.16));
           clone.style.top = '0px';
           clone.style.left = '0px';
           clone.style.width = window.innerWidth + 'px';
           clone.style.height = headerHeight + 'px';
           clone.style.borderRadius = '0px';
-          if(cloneLogo) cloneLogo.style.height = '17px';
-          if(cloneDate) cloneDate.style.fontSize = '.56rem';
+          if(cloneLogo) cloneLogo.style.height = finalLogoH + 'px';
+          if(cloneDate) cloneDate.style.fontSize = '.64rem';
 
           setTimeout(function(){
-            // ФАЗА 2 — полоса заливает своим цветом весь экран
+            // ФАЗА 2 — полоса заливает своим цветом весь экран. Надпись остаётся
+            // на месте почти до самого конца и растворяется в последний момент.
             clone.style.transition =
               'top ' + PHASE2_MS + 'ms ' + EASE + ',' +
               'left ' + PHASE2_MS + 'ms ' + EASE + ',' +
               'width ' + PHASE2_MS + 'ms ' + EASE + ',' +
               'height ' + PHASE2_MS + 'ms ' + EASE;
-            if(cloneLogo) cloneLogo.style.transition = 'opacity .22s ease';
-            if(cloneDate) cloneDate.style.transition = 'opacity .22s ease';
+            if(cloneLogo) cloneLogo.style.transition = 'opacity ' + TEXT_FADE_MS + 'ms ease ' + TEXT_FADE_DELAY + 'ms';
+            if(cloneDate) cloneDate.style.transition = 'opacity ' + TEXT_FADE_MS + 'ms ease ' + TEXT_FADE_DELAY + 'ms';
             if(cloneLogo) cloneLogo.style.opacity = '0';
             if(cloneDate) cloneDate.style.opacity = '0';
 
@@ -318,6 +346,64 @@
 
   var flyLinks = document.querySelectorAll('a.card.card-tea, a.card.card-bar');
   for(var i = 0; i < flyLinks.length; i++){ attachFly(flyLinks[i]); }
+
+  // ---------- Возврат назад без перезагрузки ----------
+  // Если браузер восстанавливает эту страницу из bfcache (кнопка "назад" после
+  // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
+  // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
+  // Вместо необходимости перезагружать страницу — красиво собираем её обратно.
+  function reverseCollapse(flight){
+    var link = flight.link, clone = flight.clone;
+    document.body.classList.remove('fly-active');
+
+    if(!clone || !clone.parentNode){
+      if(link) link.style.visibility = '';
+      return;
+    }
+    if(link) link.style.visibility = '';
+
+    var rect = link.getBoundingClientRect();
+    var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
+    var cloneDate = clone.querySelector('.card-date');
+    var cloneArrow = clone.querySelector('.card-arrow-corner');
+    var REV_MS = 520;
+
+    clone.style.transition =
+      'top ' + REV_MS + 'ms ' + EASE + ',' +
+      'left ' + REV_MS + 'ms ' + EASE + ',' +
+      'width ' + REV_MS + 'ms ' + EASE + ',' +
+      'height ' + REV_MS + 'ms ' + EASE + ',' +
+      'border-radius ' + REV_MS + 'ms ' + EASE;
+    if(cloneLogo) cloneLogo.style.transition = 'height ' + REV_MS + 'ms ' + EASE + ', opacity .3s ease';
+    if(cloneDate) cloneDate.style.transition = 'font-size ' + REV_MS + 'ms ' + EASE + ', opacity .3s ease';
+    if(cloneArrow) cloneArrow.style.transition = 'opacity .3s ease';
+
+    void clone.offsetHeight;
+
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        clone.style.top = rect.top + 'px';
+        clone.style.left = rect.left + 'px';
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.borderRadius = getComputedStyle(link).borderRadius;
+        if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
+        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.opacity = '1'; }
+        if(cloneArrow) cloneArrow.style.opacity = '1';
+      });
+    });
+
+    setTimeout(function(){
+      if(clone.parentNode) clone.parentNode.removeChild(clone);
+    }, REV_MS + 80);
+  }
+
+  window.addEventListener('pageshow', function(){
+    if(!activeFlights.length) return;
+    var flights = activeFlights;
+    activeFlights = [];
+    for(var i = 0; i < flights.length; i++){ reverseCollapse(flights[i]); }
+  });
 })();
 </script>
 
