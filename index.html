@@ -177,14 +177,14 @@
 <h2 class="rest-name"><img class="rest-logo" src="logo-hacho-puri-light.png" alt="Хачо и Пури"/></h2>
 <div class="divider"></div>
 <div class="cards">
-<a class="card card-tea" href="chai.html" data-final-logo-height="36">
+<a class="card card-tea" href="chai.html" data-final-logo-height="36" data-final-logo-top="12">
 <span class="card-text-center">
 <img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
 <span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow-corner">→</span>
 </a>
-<a class="card card-bar" href="bar.html" data-final-logo-height="34">
+<a class="card card-bar" href="bar.html" data-final-logo-height="34" data-final-logo-top="20">
 <span class="card-text-center">
 <img class="bar-logo" src="logo-bar-wide-light.png" alt="Барная карта"/>
 <span class="card-date">Демо</span>
@@ -228,19 +228,15 @@
 <script>
 (function(){
   var EASE = 'cubic-bezier(.4,0,.2,1)';
-  var PHASE1_MS = 620;   // подъём наверх + уменьшение надписи
-  var PHASE2_MS = 560;   // заливка всего экрана цветом
-  var TEXT_FADE_MS = 240; // сколько длится исчезновение надписи в конце фазы 2
-  var TEXT_FADE_DELAY = Math.max(0, PHASE2_MS - TEXT_FADE_MS); // держим надпись видимой почти до конца
+  var TOTAL_MS = 1100;        // общая длительность роста кнопки на весь экран (одно слитное движение)
+  var TEXT_SETTLE_MS = 620;   // за сколько текст успевает встать на точное место шапки и остаётся там
+  var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце
+  var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
 
-  function headerHeightNow(){
-    return Math.max(84, Math.min(112, window.innerHeight * 0.16));
-  }
-
-  // Список карточек, которые в момент ухода со страницы (например, через
-  // sessionStorage-переход) остались "подвешены" в летящем состоянии. Если
-  // браузер восстановит эту страницу из bfcache при нажатии "назад", здесь
-  // будет запись — и мы аккуратно соберём карточку обратно, без перезагрузки.
+  // Список карточек, которые в момент ухода со страницы остались "подвешены"
+  // в летящем состоянии. Если браузер восстановит эту страницу из bfcache при
+  // нажатии "назад" — здесь будет запись, и мы аккуратно соберём карточку
+  // обратно, без перезагрузки.
   var activeFlights = [];
 
   function attachFly(link){
@@ -254,6 +250,8 @@
       e.preventDefault();
       var targetHref = link.getAttribute('href');
       var finalLogoH = parseInt(link.getAttribute('data-final-logo-height'), 10) || 30;
+      var finalLogoTop = parseInt(link.getAttribute('data-final-logo-top'), 10);
+      if(isNaN(finalLogoTop)) finalLogoTop = 14;
 
       document.body.classList.add('fly-active'); // остальной контент уходит
 
@@ -262,6 +260,7 @@
       clone.classList.add('fly-clone');
       clone.removeAttribute('href');
       clone.removeAttribute('data-final-logo-height');
+      clone.removeAttribute('data-final-logo-top');
       clone.style.position = 'fixed';
       clone.style.margin = '0';
       clone.style.top = rect.top + 'px';
@@ -274,12 +273,6 @@
       // убираем узор фона на время полёта — при растяжении плитка узора даёт
       // заметные швы; сплошной цвет летит идеально гладко
       clone.style.backgroundImage = 'none';
-      clone.style.transition =
-        'top ' + PHASE1_MS + 'ms ' + EASE + ',' +
-        'left ' + PHASE1_MS + 'ms ' + EASE + ',' +
-        'width ' + PHASE1_MS + 'ms ' + EASE + ',' +
-        'height ' + PHASE1_MS + 'ms ' + EASE + ',' +
-        'border-radius ' + PHASE1_MS + 'ms ' + EASE;
 
       document.body.appendChild(clone);
       link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
@@ -290,15 +283,16 @@
       var cloneDate = clone.querySelector('.card-date');
       var cloneArrow = clone.querySelector('.card-arrow-corner');
 
-      if(cloneArrow){
-        cloneArrow.style.transition = 'opacity .25s ease';
-        cloneArrow.style.opacity = '0';
-      }
-      if(cloneLogo){
-        cloneLogo.style.transition = 'height ' + PHASE1_MS + 'ms ' + EASE;
-      }
-      if(cloneDate){
-        cloneDate.style.transition = 'font-size ' + PHASE1_MS + 'ms ' + EASE;
+      // Текущее (естественное, центрированное) положение текста внутри карточки —
+      // отталкиваемся от него, чтобы переключение на "прижатие к верху" прошло
+      // без единого рывка.
+      var startOffset = 0;
+      if(cloneText){
+        var cloneRectNow = clone.getBoundingClientRect();
+        var textRectNow = cloneText.getBoundingClientRect();
+        startOffset = textRectNow.top - cloneRectNow.top;
+        clone.style.alignItems = 'flex-start';
+        clone.style.paddingTop = startOffset + 'px';
       }
 
       function goToPage(){
@@ -306,56 +300,46 @@
         window.location.href = targetHref;
       }
 
-      // форсируем рефлоу, чтобы браузер зафиксировал стартовое состояние перед стартом фазы 1
+      // Единый набор переходов: сама карточка растёт во все стороны разом
+      // (TOTAL_MS), а текст успевает встать на точное место шапки назначения
+      // заметно раньше (TEXT_SETTLE_MS) и просто остаётся там до самого конца.
+      clone.style.transition =
+        'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'border-radius ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'padding-top ' + TEXT_SETTLE_MS + 'ms ' + EASE;
+      if(cloneArrow){
+        cloneArrow.style.transition = 'opacity .25s ease';
+      }
+      if(cloneLogo){
+        cloneLogo.style.transition =
+          'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ',' +
+          'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
+      }
+      if(cloneDate){
+        cloneDate.style.transition =
+          'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ',' +
+          'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
+      }
+
+      // форсируем рефлоу, чтобы браузер зафиксировал стартовое состояние
       void clone.offsetHeight;
 
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
-          // ФАЗА 1 — карточка едет наверх и превращается в тонкую полосу-шапку;
-          // надпись уменьшается ровно до размера, в котором она стоит в шапке назначения
-          var headerHeight = headerHeightNow();
-          clone.style.top = '0px';
-          clone.style.left = '0px';
-          clone.style.width = window.innerWidth + 'px';
-          clone.style.height = headerHeight + 'px';
+          clone.style.top = (-OVERSCAN) + 'px';
+          clone.style.left = (-OVERSCAN) + 'px';
+          clone.style.width = (window.innerWidth + OVERSCAN * 2) + 'px';
+          clone.style.height = (window.innerHeight + OVERSCAN * 2) + 'px';
           clone.style.borderRadius = '0px';
-          if(cloneLogo) cloneLogo.style.height = finalLogoH + 'px';
-          if(cloneDate) cloneDate.style.fontSize = '.64rem';
+          clone.style.paddingTop = finalLogoTop + 'px';
+          if(cloneArrow) cloneArrow.style.opacity = '0';
+          if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; cloneLogo.style.opacity = '0'; }
+          if(cloneDate){ cloneDate.style.fontSize = '.64rem'; cloneDate.style.opacity = '0'; }
 
-          setTimeout(function(){
-            // Текст уже встал ровно туда, где будет в шапке назначения. Чтобы он
-            // остался там же и не "сползал" вниз по мере роста высоты — прижимаем
-            // блок к верху (вместо центрирования) с тем же отступом, что и сейчас,
-            // так что визуально ничего не сдвигается в момент переключения.
-            if(cloneText){
-              var cloneRectNow = clone.getBoundingClientRect();
-              var textRectNow = cloneText.getBoundingClientRect();
-              var anchorOffset = textRectNow.top - cloneRectNow.top;
-              clone.style.alignItems = 'flex-start';
-              clone.style.paddingTop = anchorOffset + 'px';
-            }
-
-            // ФАЗА 2 — полоса заливает своим цветом весь экран. Надпись остаётся
-            // на месте почти до самого конца и растворяется в последний момент.
-            clone.style.transition =
-              'top ' + PHASE2_MS + 'ms ' + EASE + ',' +
-              'left ' + PHASE2_MS + 'ms ' + EASE + ',' +
-              'width ' + PHASE2_MS + 'ms ' + EASE + ',' +
-              'height ' + PHASE2_MS + 'ms ' + EASE;
-            if(cloneLogo) cloneLogo.style.transition = 'opacity ' + TEXT_FADE_MS + 'ms ease ' + TEXT_FADE_DELAY + 'ms';
-            if(cloneDate) cloneDate.style.transition = 'opacity ' + TEXT_FADE_MS + 'ms ease ' + TEXT_FADE_DELAY + 'ms';
-            if(cloneLogo) cloneLogo.style.opacity = '0';
-            if(cloneDate) cloneDate.style.opacity = '0';
-
-            requestAnimationFrame(function(){
-              clone.style.top = '0px';
-              clone.style.left = '0px';
-              clone.style.width = window.innerWidth + 'px';
-              clone.style.height = window.innerHeight + 'px';
-
-              setTimeout(goToPage, PHASE2_MS + 40);
-            });
-          }, PHASE1_MS + 20);
+          setTimeout(goToPage, TOTAL_MS + 60);
         });
       });
     });
@@ -367,88 +351,80 @@
   // ---------- Возврат назад без перезагрузки ----------
   // Если браузер восстанавливает эту страницу из bfcache (кнопка "назад" после
   // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
-  // то есть с летящим клоном на весь экран (текст прижат к верху, невидим) и
-  // спрятанной настоящей карточкой. Вместо перезагрузки — зеркально собираем
-  // всё обратно: сначала полоса сжимается обратно в шапку (текст проявляется
-  // на своём месте), затем шапка едет вниз и сжимается обратно в кнопку.
+  // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
+  // Вместо перезагрузки — зеркально собираем всё обратно ОДНИМ слитным
+  // движением, и открываем остальной контент строго в конце — синхронно,
+  // без промежуточного "дубля" настоящей карточки под клоном.
   function reverseCollapse(flight){
     var link = flight.link, clone = flight.clone;
-    document.body.classList.remove('fly-active');
 
     if(!clone || !clone.parentNode){
+      document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
       return;
     }
 
+    var cloneText = clone.querySelector('.card-text-center');
     var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
     var cloneDate = clone.querySelector('.card-date');
     var cloneArrow = clone.querySelector('.card-arrow-corner');
-    var REV_A_MS = PHASE2_MS; // зеркало прямой фазы 2: fullscreen → полоса-шапка
-    var REV_B_MS = PHASE1_MS; // зеркало прямой фазы 1: полоса-шапка → кнопка
-    var headerHeight = headerHeightNow();
 
-    // СТАДИЯ A — полноэкранная заливка сжимается обратно в полосу-шапку;
-    // текст (был невидим) проявляется на своём месте, никуда не сдвигаясь,
-    // т.к. блок всё ещё прижат к верху ровно тем же отступом, что и при уходе.
+    // Настоящая карточка всё ещё скрыта (visibility:hidden), но её геометрия
+    // никуда не делась — это даёт нам ТОЧНОЕ целевое положение текста и
+    // размеры, без каких-либо приближений.
+    var rect = link.getBoundingClientRect();
+    var naturalOffset = 0;
+    if(cloneText){
+      var linkText = link.querySelector('.card-text-center');
+      if(linkText) naturalOffset = linkText.getBoundingClientRect().top - rect.top;
+    }
+    var realRadius = getComputedStyle(link).borderRadius;
+
     clone.style.transition =
-      'top ' + REV_A_MS + 'ms ' + EASE + ',' +
-      'left ' + REV_A_MS + 'ms ' + EASE + ',' +
-      'width ' + REV_A_MS + 'ms ' + EASE + ',' +
-      'height ' + REV_A_MS + 'ms ' + EASE;
-    if(cloneLogo) cloneLogo.style.transition = 'opacity .3s ease';
-    if(cloneDate) cloneDate.style.transition = 'opacity .3s ease';
+      'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'border-radius ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'padding-top ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms';
+    if(cloneArrow){
+      cloneArrow.style.transition = 'opacity .3s ease ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms';
+    }
+    if(cloneLogo){
+      cloneLogo.style.transition =
+        'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms,' +
+        'opacity ' + TEXT_FADE_MS + 'ms ease';
+    }
+    if(cloneDate){
+      cloneDate.style.transition =
+        'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms,' +
+        'opacity ' + TEXT_FADE_MS + 'ms ease';
+    }
 
     void clone.offsetHeight;
 
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        clone.style.top = '0px';
-        clone.style.left = '0px';
-        clone.style.width = window.innerWidth + 'px';
-        clone.style.height = headerHeight + 'px';
-        if(cloneLogo) cloneLogo.style.opacity = '1';
-        if(cloneDate) cloneDate.style.opacity = '1';
+        clone.style.top = rect.top + 'px';
+        clone.style.left = rect.left + 'px';
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.borderRadius = realRadius;
+        clone.style.paddingTop = naturalOffset + 'px';
+        if(cloneArrow) cloneArrow.style.opacity = '1';
+        if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
+        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.opacity = '1'; }
       });
     });
 
+    // Раскрываем остальной контент и убираем клон строго в один момент —
+    // в конце, а не по ходу дела, чтобы не было видно "дубля" настоящей
+    // карточки рядом с ещё летящим клоном.
     setTimeout(function(){
-      // СТАДИЯ B — полоса-шапка едет вниз и сжимается обратно в кнопку.
-      // Возвращаем центрирование (вместо прижатия к верху) ровно на той же
-      // высоте headerHeight — визуально это то же самое место, скачка нет.
+      document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
-      var rect = link ? link.getBoundingClientRect() : null;
-      if(!rect){ if(clone.parentNode) clone.parentNode.removeChild(clone); return; }
-
-      clone.style.alignItems = 'center';
-      clone.style.paddingTop = '';
-      clone.style.transition =
-        'top ' + REV_B_MS + 'ms ' + EASE + ',' +
-        'left ' + REV_B_MS + 'ms ' + EASE + ',' +
-        'width ' + REV_B_MS + 'ms ' + EASE + ',' +
-        'height ' + REV_B_MS + 'ms ' + EASE + ',' +
-        'border-radius ' + REV_B_MS + 'ms ' + EASE;
-      if(cloneLogo) cloneLogo.style.transition = 'height ' + REV_B_MS + 'ms ' + EASE;
-      if(cloneDate) cloneDate.style.transition = 'font-size ' + REV_B_MS + 'ms ' + EASE;
-      if(cloneArrow){ cloneArrow.style.transition = 'opacity .3s ease'; cloneArrow.style.opacity = '1'; }
-
-      void clone.offsetHeight;
-
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          clone.style.top = rect.top + 'px';
-          clone.style.left = rect.left + 'px';
-          clone.style.width = rect.width + 'px';
-          clone.style.height = rect.height + 'px';
-          clone.style.borderRadius = getComputedStyle(link).borderRadius;
-          if(cloneLogo) cloneLogo.style.height = '';
-          if(cloneDate) cloneDate.style.fontSize = '';
-        });
-      });
-
-      setTimeout(function(){
-        if(clone.parentNode) clone.parentNode.removeChild(clone);
-      }, REV_B_MS + 80);
-    }, REV_A_MS + 20);
+      if(clone.parentNode) clone.parentNode.removeChild(clone);
+    }, TOTAL_MS + 40);
   }
 
   window.addEventListener('pageshow', function(){
