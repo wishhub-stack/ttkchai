@@ -64,6 +64,24 @@
     color:var(--muted); text-transform:uppercase; border:none;
     border-radius:0; padding:0; background:none;
   }
+
+  /* ---------- Вход по анимированному переходу с главной ---------- */
+  /* Логотип и дата уже "долетели" на своё место и видны сразу — а остальное
+     содержимое мягко проявляется вокруг них, будто вырастает из ниоткуда,
+     без какого-либо тёмного экрана поверх страницы. */
+  .search-row, #count, .pills, #scroll-area{
+    transition:opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+  }
+  #count{ transition-delay:.05s; }
+  .pills{ transition-delay:.1s; }
+  #scroll-area{ transition-delay:.16s; }
+  html.entry-veil .search-row,
+  html.entry-veil #count,
+  html.entry-veil .pills,
+  html.entry-veil #scroll-area{
+    opacity:0; transform:translateY(10px);
+  }
+
   .search-row{position:relative; margin-bottom:12px;}
   #search{
     width:100%; font-family:'Manrope',sans-serif; font-size:1rem; font-weight:600;
@@ -273,31 +291,23 @@
 <body>
 <script>
 (function(){
-  // Если пришли по анимированному переходу с главной — сразу же (до отрисовки
-  // остального) ставим "занавес" в цвет страницы, который затем плавно растает,
-  // проявляя шапку/поиск/карточки. Обычный DOM + CSS, без спецфич браузера —
-  // поэтому одинаково исправно в Safari, Chrome и Telegram in-app браузере.
+  // Если пришли по анимированному переходу с главной — логотип и дата уже на
+  // месте (совпадают по размеру/позиции с тем, во что "долетела" кнопка), их
+  // не прячем вообще. Прячем только остальное содержимое (класс на <html>,
+  // задаётся синхронно до первой отрисовки) и мягко проявляем его чуть позже —
+  // без единого тёмного кадра поверх страницы.
   var entering = false;
   try{ entering = sessionStorage.getItem('fly:chai.html') === '1'; sessionStorage.removeItem('fly:chai.html'); }catch(e){}
   if(entering){
-    var veil = document.createElement('div');
-    veil.id = 'enter-veil';
-    veil.style.cssText =
-      'position:fixed;inset:0;z-index:99999;pointer-events:none;' +
-      'background-color:#F4ECDF;' +
-      'opacity:1;transition:opacity .6s cubic-bezier(.4,0,.2,1);';
-    document.body.appendChild(veil);
-
+    document.documentElement.classList.add('entry-veil');
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function reveal(){
-      if(reduceMotion){ veil.remove(); return; }
-      veil.style.opacity = '0';
-      veil.addEventListener('transitionend', function(){ veil.remove(); }, {once:true});
-      setTimeout(function(){ if(veil.parentNode) veil.remove(); }, 900); // страховка
+    function reveal(){ document.documentElement.classList.remove('entry-veil'); }
+    if(reduceMotion){ reveal(); }
+    else{
+      window.addEventListener('load', function(){
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 90); }); });
+      });
     }
-    window.addEventListener('load', function(){
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 160); }); });
-    });
   }
 })();
 </script>

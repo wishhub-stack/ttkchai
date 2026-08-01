@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
@@ -55,6 +54,22 @@
   .tagline{
     display:block; text-align:center; font-family:'Manrope',sans-serif; font-size:.76rem;
     color:var(--muted); line-height:1.5; margin:0 auto 16px; max-width:340px;
+  }
+
+  /* ---------- Вход по анимированному переходу с главной ---------- */
+  /* Логотип уже "долетел" на своё место и виден сразу — остальное содержимое
+     мягко проявляется вокруг него, без тёмного экрана поверх страницы. */
+  .tagline, .pills, main, footer{
+    transition:opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+  }
+  .pills{ transition-delay:.06s; }
+  main{ transition-delay:.12s; }
+  footer{ transition-delay:.18s; }
+  html.entry-veil .tagline,
+  html.entry-veil .pills,
+  html.entry-veil main,
+  html.entry-veil footer{
+    opacity:0; transform:translateY(10px);
   }
 
   .pills{display:flex; flex-wrap:wrap; justify-content:center; gap:8px;}
@@ -143,30 +158,22 @@
 <body>
 <script>
 (function(){
-  // Если пришли по анимированному переходу с главной — сразу ставим "занавес" в
-  // цвет и узор этой страницы, который затем плавно растает, проявляя шапку,
-  // фильтры и карточки. Обычный DOM + CSS, без спецфич браузера.
+  // Если пришли по анимированному переходу с главной — логотип уже на месте,
+  // его не прячем вообще. Прячем только остальное содержимое (класс на <html>,
+  // задаётся синхронно до первой отрисовки) и мягко проявляем его чуть позже —
+  // без единого тёмного кадра поверх страницы.
   var entering = false;
   try{ entering = sessionStorage.getItem('fly:bar.html') === '1'; sessionStorage.removeItem('fly:bar.html'); }catch(e){}
   if(entering){
-    var veil = document.createElement('div');
-    veil.id = 'enter-veil';
-    veil.style.cssText =
-      'position:fixed;inset:0;z-index:99999;pointer-events:none;' +
-      'background-color:#241611;' +
-      'opacity:1;transition:opacity .6s cubic-bezier(.4,0,.2,1);';
-    document.body.appendChild(veil);
-
+    document.documentElement.classList.add('entry-veil');
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function reveal(){
-      if(reduceMotion){ veil.remove(); return; }
-      veil.style.opacity = '0';
-      veil.addEventListener('transitionend', function(){ veil.remove(); }, {once:true});
-      setTimeout(function(){ if(veil.parentNode) veil.remove(); }, 900); // страховка
+    function reveal(){ document.documentElement.classList.remove('entry-veil'); }
+    if(reduceMotion){ reveal(); }
+    else{
+      window.addEventListener('load', function(){
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 90); }); });
+      });
     }
-    window.addEventListener('load', function(){
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 160); }); });
-    });
   }
 })();
 </script>

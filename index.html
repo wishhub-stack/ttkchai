@@ -326,14 +326,10 @@
         cloneArrow.style.transition = 'opacity .25s ease';
       }
       if(cloneLogo){
-        cloneLogo.style.transition =
-          'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
-          'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
+        cloneLogo.style.transition = 'height ' + TOTAL_MS + 'ms ' + EASE;
       }
       if(cloneDate){
-        cloneDate.style.transition =
-          'font-size ' + TOTAL_MS + 'ms ' + EASE + ',' +
-          'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
+        cloneDate.style.transition = 'font-size ' + TOTAL_MS + 'ms ' + EASE;
       }
 
       // форсируем рефлоу, чтобы браузер зафиксировал стартовое состояние
@@ -348,8 +344,11 @@
           clone.style.borderRadius = '0px';
           if(cloneText) cloneText.style.top = finalLogoTop + 'px'; // точная позиция в реальной шапке
           if(cloneArrow) cloneArrow.style.opacity = '0';
-          if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; cloneLogo.style.opacity = '0'; }
-          if(cloneDate){ cloneDate.style.fontSize = '.64rem'; cloneDate.style.opacity = '0'; }
+          // Лого и дата остаются видимыми и просто уменьшаются до размера,
+          // который они займут в реальной шапке — это то самое "оставить
+          // кнопку видимой", а не спрятать её перед переходом.
+          if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; }
+          if(cloneDate){ cloneDate.style.fontSize = '.64rem'; }
 
           setTimeout(goToPage, TOTAL_MS + 60);
         });
