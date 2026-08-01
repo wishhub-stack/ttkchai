@@ -228,9 +228,9 @@
 <script>
 (function(){
   var EASE = 'cubic-bezier(.4,0,.2,1)';
-  var TOTAL_MS = 1100;        // общая длительность роста кнопки на весь экран (одно слитное движение)
-  var TEXT_SETTLE_MS = 620;   // за сколько текст успевает встать на точное место шапки и остаётся там
-  var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце
+  var TOTAL_MS = 1100;        // единая длительность роста/сжатия кнопки — двигается ВСЁ разом, с этой же скоростью едет и текст
+  var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце полёта
+  var CLONE_FADE_MS = 380;    // при возврате: плавное растворение клона в настоящую (уже с узором) кнопку — без щелчка
   var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
   var REVEAL_DELAY_MS = 220;  // при возврате: пауза после того, как кнопка встала на место
   var REVEAL_MS = 700;        // при возврате: остальной контент проявляется медленно, а не рывком
@@ -283,6 +283,7 @@
       clone.style.zIndex = '99999';
       clone.style.pointerEvents = 'none';
       clone.style.borderRadius = getComputedStyle(link).borderRadius;
+      clone.style.willChange = 'top, left, width, height';
       // убираем узор фона на время полёта — при растяжении плитка узора даёт
       // заметные швы; сплошной цвет летит идеально гладко
       clone.style.backgroundImage = 'none';
@@ -296,17 +297,14 @@
       var cloneDate = clone.querySelector('.card-date');
       var cloneArrow = clone.querySelector('.card-arrow-corner');
 
-      // ВАЖНО: текст переводим на собственное позиционирование "поверх экрана",
-      // полностью независимое от коробки, которая растёт вокруг. Так его
-      // движение — это чистое "отсюда сюда" в координатах экрана, и никакой
-      // рост/сдвиг самой коробки не может его "утянуть" дальше, чем нужно.
-      var textStartTop = 0;
+      // Текст — на собственном позиционировании "поверх экрана", полностью
+      // независимом от коробки вокруг. Едет туда же и с той же скоростью,
+      // что и сама коробка — оба движения ощущаются одним целым, без спешки.
       if(cloneText){
         var textRectNow = cloneText.getBoundingClientRect();
-        textStartTop = textRectNow.top;
         cloneText.style.position = 'fixed';
         cloneText.style.left = '0';
-        cloneText.style.top = textStartTop + 'px';
+        cloneText.style.top = textRectNow.top + 'px';
         cloneText.style.margin = '0';
       }
 
@@ -315,9 +313,6 @@
         window.location.href = targetHref;
       }
 
-      // Коробка растёт во все стороны разом за TOTAL_MS. Текст едет к своей
-      // точной цели заметно быстрее (TEXT_SETTLE_MS) и просто остаётся там —
-      // ведь он больше никак не связан с продолжающимся ростом коробки.
       clone.style.transition =
         'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
@@ -325,19 +320,19 @@
         'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'border-radius ' + TOTAL_MS + 'ms ' + EASE;
       if(cloneText){
-        cloneText.style.transition = 'top ' + TEXT_SETTLE_MS + 'ms ' + EASE;
+        cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
       }
       if(cloneArrow){
         cloneArrow.style.transition = 'opacity .25s ease';
       }
       if(cloneLogo){
         cloneLogo.style.transition =
-          'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ',' +
+          'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
           'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
       }
       if(cloneDate){
         cloneDate.style.transition =
-          'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ',' +
+          'font-size ' + TOTAL_MS + 'ms ' + EASE + ',' +
           'opacity ' + TEXT_FADE_MS + 'ms ease ' + (TOTAL_MS - TEXT_FADE_MS) + 'ms';
       }
 
@@ -369,8 +364,10 @@
   // Если браузер восстанавливает эту страницу из bfcache (кнопка "назад" после
   // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
   // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
-  // Вместо перезагрузки — зеркально собираем всё обратно, а остальной контент
-  // проявляется медленно и только ПОСЛЕ того, как кнопка уже точно на месте.
+  // Вместо перезагрузки — зеркально собираем всё обратно: коробка и текст едут
+  // единым движением, затем клон плавно растворяется в настоящую (уже с узором)
+  // карточку — без щелчка, — и только потом, с паузой и медленно, проявляется
+  // остальной контент.
   function reverseCollapse(flight){
     var link = flight.link, clone = flight.clone;
 
@@ -396,7 +393,6 @@
       if(linkText) naturalTextTop = linkText.getBoundingClientRect().top;
     }
     var realRadius = getComputedStyle(link).borderRadius;
-    var delay = Math.max(0, TOTAL_MS - TEXT_SETTLE_MS);
 
     clone.style.transition =
       'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
@@ -405,19 +401,19 @@
       'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'border-radius ' + TOTAL_MS + 'ms ' + EASE;
     if(cloneText){
-      cloneText.style.transition = 'top ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms';
+      cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
     }
     if(cloneArrow){
-      cloneArrow.style.transition = 'opacity .3s ease ' + delay + 'ms';
+      cloneArrow.style.transition = 'opacity .3s ease';
     }
     if(cloneLogo){
       cloneLogo.style.transition =
-        'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms,' +
+        'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
     if(cloneDate){
       cloneDate.style.transition =
-        'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms,' +
+        'font-size ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
 
@@ -437,26 +433,36 @@
       });
     });
 
-    // Кнопка садится на место — и только теперь, с небольшой паузой и
-    // намеренно медленно, проявляется обратно всё остальное содержимое.
+    // Коробка и текст пришли на точное место настоящей кнопки. Показываем
+    // настоящую (уже с узором фона) кнопку под клоном и плавно растворяем
+    // клон поверх неё — узор проступает мягко, а не щелчком.
     setTimeout(function(){
       if(link) link.style.visibility = '';
-      if(clone.parentNode) clone.parentNode.removeChild(clone);
-      if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+      clone.style.willChange = '';
+      clone.style.transition = 'opacity ' + CLONE_FADE_MS + 'ms ease';
+      void clone.offsetHeight;
+      clone.style.opacity = '0';
 
       setTimeout(function(){
-        var wrap = document.querySelector('.wrap');
-        var sig = document.querySelector('footer.sig');
-        var slowFade = 'opacity ' + REVEAL_MS + 'ms ease';
-        if(wrap) wrap.style.transition = slowFade;
-        if(sig) sig.style.transition = slowFade;
-        document.body.classList.remove('fly-active');
+        if(clone.parentNode) clone.parentNode.removeChild(clone);
+        if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
 
+        // Кнопка давно на месте — и только теперь, с небольшой паузой и
+        // намеренно медленно, проявляется обратно всё остальное содержимое.
         setTimeout(function(){
-          if(wrap) wrap.style.transition = '';
-          if(sig) sig.style.transition = '';
-        }, REVEAL_MS + 50);
-      }, REVEAL_DELAY_MS);
+          var wrap = document.querySelector('.wrap');
+          var sig = document.querySelector('footer.sig');
+          var slowFade = 'opacity ' + REVEAL_MS + 'ms ease';
+          if(wrap) wrap.style.transition = slowFade;
+          if(sig) sig.style.transition = slowFade;
+          document.body.classList.remove('fly-active');
+
+          setTimeout(function(){
+            if(wrap) wrap.style.transition = '';
+            if(sig) sig.style.transition = '';
+          }, REVEAL_MS + 50);
+        }, REVEAL_DELAY_MS);
+      }, CLONE_FADE_MS + 20);
     }, TOTAL_MS + 40);
   }
 
