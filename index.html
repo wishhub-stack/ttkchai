@@ -232,6 +232,14 @@
   var TEXT_SETTLE_MS = 620;   // за сколько текст успевает встать на точное место шапки и остаётся там
   var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце
   var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
+  var REVEAL_DELAY_MS = 220;  // при возврате: пауза после того, как кнопка встала на место
+  var REVEAL_MS = 700;        // при возврате: остальной контент проявляется медленно, а не рывком
+
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+  var ORIGINAL_THEME_COLOR = themeMeta ? themeMeta.getAttribute('content') : null;
+  function setThemeColor(c){
+    if(themeMeta && c) themeMeta.setAttribute('content', c);
+  }
 
   // Список карточек, которые в момент ухода со страницы остались "подвешены"
   // в летящем состоянии. Если браузер восстановит эту страницу из bfcache при
@@ -252,6 +260,11 @@
       var finalLogoH = parseInt(link.getAttribute('data-final-logo-height'), 10) || 30;
       var finalLogoTop = parseInt(link.getAttribute('data-final-logo-top'), 10);
       if(isNaN(finalLogoTop)) finalLogoTop = 14;
+
+      // Синхронизируем цвет системной шторки браузера с цветом, в который
+      // вот-вот превратится весь экран — чтобы она не переключалась рывком
+      // отдельно от нашей анимации.
+      setThemeColor(getComputedStyle(link).backgroundColor);
 
       document.body.classList.add('fly-active'); // остальной контент уходит
 
@@ -283,16 +296,18 @@
       var cloneDate = clone.querySelector('.card-date');
       var cloneArrow = clone.querySelector('.card-arrow-corner');
 
-      // Текущее (естественное, центрированное) положение текста внутри карточки —
-      // отталкиваемся от него, чтобы переключение на "прижатие к верху" прошло
-      // без единого рывка.
-      var startOffset = 0;
+      // ВАЖНО: текст переводим на собственное позиционирование "поверх экрана",
+      // полностью независимое от коробки, которая растёт вокруг. Так его
+      // движение — это чистое "отсюда сюда" в координатах экрана, и никакой
+      // рост/сдвиг самой коробки не может его "утянуть" дальше, чем нужно.
+      var textStartTop = 0;
       if(cloneText){
-        var cloneRectNow = clone.getBoundingClientRect();
         var textRectNow = cloneText.getBoundingClientRect();
-        startOffset = textRectNow.top - cloneRectNow.top;
-        clone.style.alignItems = 'flex-start';
-        clone.style.paddingTop = startOffset + 'px';
+        textStartTop = textRectNow.top;
+        cloneText.style.position = 'fixed';
+        cloneText.style.left = '0';
+        cloneText.style.top = textStartTop + 'px';
+        cloneText.style.margin = '0';
       }
 
       function goToPage(){
@@ -300,16 +315,18 @@
         window.location.href = targetHref;
       }
 
-      // Единый набор переходов: сама карточка растёт во все стороны разом
-      // (TOTAL_MS), а текст успевает встать на точное место шапки назначения
-      // заметно раньше (TEXT_SETTLE_MS) и просто остаётся там до самого конца.
+      // Коробка растёт во все стороны разом за TOTAL_MS. Текст едет к своей
+      // точной цели заметно быстрее (TEXT_SETTLE_MS) и просто остаётся там —
+      // ведь он больше никак не связан с продолжающимся ростом коробки.
       clone.style.transition =
         'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
-        'border-radius ' + TOTAL_MS + 'ms ' + EASE + ',' +
-        'padding-top ' + TEXT_SETTLE_MS + 'ms ' + EASE;
+        'border-radius ' + TOTAL_MS + 'ms ' + EASE;
+      if(cloneText){
+        cloneText.style.transition = 'top ' + TEXT_SETTLE_MS + 'ms ' + EASE;
+      }
       if(cloneArrow){
         cloneArrow.style.transition = 'opacity .25s ease';
       }
@@ -334,7 +351,7 @@
           clone.style.width = (window.innerWidth + OVERSCAN * 2) + 'px';
           clone.style.height = (window.innerHeight + OVERSCAN * 2) + 'px';
           clone.style.borderRadius = '0px';
-          clone.style.paddingTop = finalLogoTop + 'px';
+          if(cloneText) cloneText.style.top = finalLogoTop + 'px'; // точная позиция в реальной шапке
           if(cloneArrow) cloneArrow.style.opacity = '0';
           if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; cloneLogo.style.opacity = '0'; }
           if(cloneDate){ cloneDate.style.fontSize = '.64rem'; cloneDate.style.opacity = '0'; }
@@ -352,15 +369,15 @@
   // Если браузер восстанавливает эту страницу из bfcache (кнопка "назад" после
   // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
   // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
-  // Вместо перезагрузки — зеркально собираем всё обратно ОДНИМ слитным
-  // движением, и открываем остальной контент строго в конце — синхронно,
-  // без промежуточного "дубля" настоящей карточки под клоном.
+  // Вместо перезагрузки — зеркально собираем всё обратно, а остальной контент
+  // проявляется медленно и только ПОСЛЕ того, как кнопка уже точно на месте.
   function reverseCollapse(flight){
     var link = flight.link, clone = flight.clone;
 
     if(!clone || !clone.parentNode){
       document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
+      if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
       return;
     }
 
@@ -370,34 +387,37 @@
     var cloneArrow = clone.querySelector('.card-arrow-corner');
 
     // Настоящая карточка всё ещё скрыта (visibility:hidden), но её геометрия
-    // никуда не делась — это даёт нам ТОЧНОЕ целевое положение текста и
-    // размеры, без каких-либо приближений.
+    // никуда не делась — берём оттуда ТОЧНУЮ цель для текста и коробки,
+    // без каких-либо приближений.
     var rect = link.getBoundingClientRect();
-    var naturalOffset = 0;
+    var naturalTextTop = rect.top;
     if(cloneText){
       var linkText = link.querySelector('.card-text-center');
-      if(linkText) naturalOffset = linkText.getBoundingClientRect().top - rect.top;
+      if(linkText) naturalTextTop = linkText.getBoundingClientRect().top;
     }
     var realRadius = getComputedStyle(link).borderRadius;
+    var delay = Math.max(0, TOTAL_MS - TEXT_SETTLE_MS);
 
     clone.style.transition =
       'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
-      'border-radius ' + TOTAL_MS + 'ms ' + EASE + ',' +
-      'padding-top ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms';
+      'border-radius ' + TOTAL_MS + 'ms ' + EASE;
+    if(cloneText){
+      cloneText.style.transition = 'top ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms';
+    }
     if(cloneArrow){
-      cloneArrow.style.transition = 'opacity .3s ease ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms';
+      cloneArrow.style.transition = 'opacity .3s ease ' + delay + 'ms';
     }
     if(cloneLogo){
       cloneLogo.style.transition =
-        'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms,' +
+        'height ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms,' +
         'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
     if(cloneDate){
       cloneDate.style.transition =
-        'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + (TOTAL_MS - TEXT_SETTLE_MS) + 'ms,' +
+        'font-size ' + TEXT_SETTLE_MS + 'ms ' + EASE + ' ' + delay + 'ms,' +
         'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
 
@@ -410,20 +430,33 @@
         clone.style.width = rect.width + 'px';
         clone.style.height = rect.height + 'px';
         clone.style.borderRadius = realRadius;
-        clone.style.paddingTop = naturalOffset + 'px';
+        if(cloneText) cloneText.style.top = naturalTextTop + 'px';
         if(cloneArrow) cloneArrow.style.opacity = '1';
         if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
         if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.opacity = '1'; }
       });
     });
 
-    // Раскрываем остальной контент и убираем клон строго в один момент —
-    // в конце, а не по ходу дела, чтобы не было видно "дубля" настоящей
-    // карточки рядом с ещё летящим клоном.
+    // Кнопка садится на место — и только теперь, с небольшой паузой и
+    // намеренно медленно, проявляется обратно всё остальное содержимое.
     setTimeout(function(){
-      document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
       if(clone.parentNode) clone.parentNode.removeChild(clone);
+      if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+
+      setTimeout(function(){
+        var wrap = document.querySelector('.wrap');
+        var sig = document.querySelector('footer.sig');
+        var slowFade = 'opacity ' + REVEAL_MS + 'ms ease';
+        if(wrap) wrap.style.transition = slowFade;
+        if(sig) sig.style.transition = slowFade;
+        document.body.classList.remove('fly-active');
+
+        setTimeout(function(){
+          if(wrap) wrap.style.transition = '';
+          if(sig) sig.style.transition = '';
+        }, REVEAL_MS + 50);
+      }, REVEAL_DELAY_MS);
     }, TOTAL_MS + 40);
   }
 
