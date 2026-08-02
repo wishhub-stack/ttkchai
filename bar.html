@@ -119,13 +119,13 @@
     clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
   }
   .sig-name{
-    display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem;
-    letter-spacing:.04em; color:var(--accent); cursor:pointer;
-    padding:4px 3px; border-bottom:1px dotted transparent;
-    transition:border-color .2s ease, color .2s ease;
+    display:inline-block; cursor:pointer; padding:4px 3px;
+    -webkit-tap-highlight-color:transparent;
+    transition:opacity .2s ease;
   }
+  .sig-logo{height:24px; width:auto; display:block;}
   @media (hover:hover){
-    .sig-name:hover{ border-color:var(--accent); }
+    .sig-name:hover{ opacity:.75; }
   }
   .sig-reveal{
     display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -219,7 +219,7 @@
 
 <footer class="sig">
   <input type="checkbox" id="sig-toggle" class="sig-input"/>
-  <label for="sig-toggle" class="sig-name">d.b wish</label>
+  <label for="sig-toggle" class="sig-name"><img alt="d.b wish" class="sig-logo" src="sig-wish-dark.png"/></label>
   <div class="sig-reveal">
     <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
     <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>

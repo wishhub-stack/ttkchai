@@ -72,8 +72,8 @@
   a.card.card-tea{
     position:relative; justify-content:center;
     background-color:var(--tea-surface);
-    background-image:linear-gradient(rgba(244,236,223,0.45), rgba(244,236,223,0.45)), url("bg-chai.jpg");
-    background-size:230px auto, 230px auto;
+    background-image:linear-gradient(rgba(244,236,223,0.37), rgba(244,236,223,0.37)), url("bg-chai.jpg");
+    background-size:460px auto, 460px auto;
     background-position:center, center;
     background-repeat:repeat, repeat;
     color:var(--tea-ink);
@@ -96,8 +96,8 @@
   a.card.card-bar{
     position:relative; justify-content:center;
     background-color:var(--bar-surface);
-    background-image:linear-gradient(rgba(36,22,17,0.32), rgba(36,22,17,0.32)), url("bg-bar.jpg");
-    background-size:190px auto, 190px auto;
+    background-image:linear-gradient(rgba(27,18,13,0.55), rgba(27,18,13,0.55)), url("bg-bar.jpg");
+    background-size:420px auto, 420px auto;
     background-position:center, center;
     background-repeat:repeat, repeat;
     border:1px solid var(--bar-line);
@@ -128,13 +128,13 @@
     clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
   }
   .sig-name{
-    display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:.8rem;
-    letter-spacing:.04em; color:var(--accent); cursor:pointer;
-    padding:4px 3px; border-bottom:1px dotted transparent;
-    transition:border-color .2s ease, color .2s ease;
+    display:inline-block; cursor:pointer; padding:4px 3px;
+    -webkit-tap-highlight-color:transparent;
+    transition:opacity .2s ease;
   }
+  .sig-logo{height:24px; width:auto; display:block;}
   @media (hover:hover){
-    .sig-name:hover{ border-color:var(--accent); }
+    .sig-name:hover{ opacity:.75; }
   }
   .sig-reveal{
     display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -218,7 +218,7 @@
 
 <footer class="sig">
   <input type="checkbox" id="sig-toggle" class="sig-input"/>
-  <label for="sig-toggle" class="sig-name">d.b wish</label>
+  <label for="sig-toggle" class="sig-name"><img alt="d.b wish" class="sig-logo" src="sig-wish-dark.png"/></label>
   <div class="sig-reveal">
     <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
     <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
@@ -284,9 +284,11 @@
       clone.style.pointerEvents = 'none';
       clone.style.borderRadius = getComputedStyle(link).borderRadius;
       clone.style.willChange = 'top, left, width, height';
-      // убираем узор фона на время полёта — при растяжении плитка узора даёт
-      // заметные швы; сплошной цвет летит идеально гладко
-      clone.style.backgroundImage = 'none';
+      // Фон намеренно НЕ убираем: тайл задан в фиксированных пикселях (не %),
+      // поэтому при росте коробки он не тянется и не даёт швов — просто
+      // становится видно больше повторов того же узора, что и на самой
+      // странице назначения. Так переход ощущается как проявление настоящего
+      // фона, а не как заливка сплошным цветом.
 
       document.body.appendChild(clone);
       link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
