@@ -177,14 +177,14 @@
 <h2 class="rest-name"><img class="rest-logo" src="logo-hacho-puri-light.png" alt="Хачо и Пури"/></h2>
 <div class="divider"></div>
 <div class="cards">
-<a class="card card-tea" href="chai.html" data-final-logo-height="36" data-final-logo-top="12">
+<a class="card card-tea" href="chai.html" data-final-logo-height="36" data-final-logo-top="12" data-tile-width="460">
 <span class="card-text-center">
 <img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
 <span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow-corner">→</span>
 </a>
-<a class="card card-bar" href="bar.html" data-final-logo-height="34" data-final-logo-top="20">
+<a class="card card-bar" href="bar.html" data-final-logo-height="34" data-final-logo-top="20" data-tile-width="420">
 <span class="card-text-center">
 <img class="bar-logo" src="logo-bar-wide-light.png" alt="Барная карта"/>
 <span class="card-date">Демо</span>
@@ -260,6 +260,7 @@
       var finalLogoH = parseInt(link.getAttribute('data-final-logo-height'), 10) || 30;
       var finalLogoTop = parseInt(link.getAttribute('data-final-logo-top'), 10);
       if(isNaN(finalLogoTop)) finalLogoTop = 14;
+      var tileW = parseInt(link.getAttribute('data-tile-width'), 10) || 460;
 
       // Синхронизируем цвет системной шторки браузера с цветом, в который
       // вот-вот превратится весь экран — чтобы она не переключалась рывком
@@ -284,11 +285,14 @@
       clone.style.pointerEvents = 'none';
       clone.style.borderRadius = getComputedStyle(link).borderRadius;
       clone.style.willChange = 'top, left, width, height';
-      // Фон намеренно НЕ убираем: тайл задан в фиксированных пикселях (не %),
-      // поэтому при росте коробки он не тянется и не даёт швов — просто
-      // становится видно больше повторов того же узора, что и на самой
-      // странице назначения. Так переход ощущается как проявление настоящего
-      // фона, а не как заливка сплошным цветом.
+      // Узор фона задан в фиксированных пикселях, поэтому при росте коробки
+      // он не тянется и не даёт швов — просто становится видно больше повторов
+      // того же узора, что и на самой странице назначения. НО background-position
+      // считается относительно рамки самого элемента, а не экрана — а рамка на
+      // финальном кадре уходит в отрицательные координаты (запас за края экрана
+      // против шва в Telegram). Поэтому точку отсчёта узора ниже компенсируем
+      // явным пересчётом в пикселях, чтобы к моменту передачи страницы узор
+      // стоял ровно там же, где будет на реальной странице назначения.
 
       document.body.appendChild(clone);
       link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
@@ -320,6 +324,7 @@
         'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'background-position ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'border-radius ' + TOTAL_MS + 'ms ' + EASE;
       if(cloneText){
         cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
@@ -344,6 +349,11 @@
           clone.style.width = (window.innerWidth + OVERSCAN * 2) + 'px';
           clone.style.height = (window.innerHeight + OVERSCAN * 2) + 'px';
           clone.style.borderRadius = '0px';
+          // Точка отсчёта узора — ровно та же, что будет у настоящей страницы
+          // назначения (её фон всегда «top center» относительно всего экрана).
+          var bgX = (window.innerWidth - tileW) / 2 + OVERSCAN;
+          var bgY = OVERSCAN;
+          clone.style.backgroundPosition = '0px 0px, ' + bgX + 'px ' + bgY + 'px';
           if(cloneText) cloneText.style.top = finalLogoTop + 'px'; // точная позиция в реальной шапке
           if(cloneArrow) cloneArrow.style.opacity = '0';
           // Лого и дата остаются видимыми и просто уменьшаются до размера,
@@ -383,6 +393,8 @@
     var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
     var cloneDate = clone.querySelector('.card-date');
     var cloneArrow = clone.querySelector('.card-arrow-corner');
+    var tileW = parseInt(clone.getAttribute('data-tile-width'), 10);
+    if(isNaN(tileW)) tileW = 460;
 
     // Настоящая карточка всё ещё скрыта (visibility:hidden), но её геометрия
     // никуда не делась — берём оттуда ТОЧНУЮ цель для текста и коробки,
@@ -400,6 +412,7 @@
       'left ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'width ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
+      'background-position ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'border-radius ' + TOTAL_MS + 'ms ' + EASE;
     if(cloneText){
       cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
@@ -427,6 +440,10 @@
         clone.style.width = rect.width + 'px';
         clone.style.height = rect.height + 'px';
         clone.style.borderRadius = realRadius;
+        // Возвращаем узор туда же, где он был у кнопки в естественном состоянии
+        // (до клика) — то есть «top center» относительно самой карточки.
+        var bgXBack = (rect.width - tileW) / 2;
+        clone.style.backgroundPosition = '0px 0px, ' + bgXBack + 'px 0px';
         if(cloneText) cloneText.style.top = naturalTextTop + 'px';
         if(cloneArrow) cloneArrow.style.opacity = '1';
         if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
