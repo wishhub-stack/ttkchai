@@ -57,14 +57,19 @@
   }
 
   /* ---------- Вход по анимированному переходу с главной ---------- */
-  /* Логотип уже "долетел" на своё место и виден сразу. Остальные элементы
-     проявляются один за другим, наплывая слева направо — видимое на первом
-     экране идёт по очереди, всё, что ниже, появляется сразу вместе. */
-  .reveal-item{
-    transition:opacity .48s cubic-bezier(.22,1,.36,1), transform .48s cubic-bezier(.22,1,.36,1);
+  /* Логотип уже "долетел" на своё место и виден сразу — остальное содержимое
+     мягко проявляется вокруг него, без тёмного экрана поверх страницы. */
+  .tagline, .pills, main, footer{
+    transition:opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
   }
-  html.entry-veil .reveal-item{
-    opacity:0; transform:translateX(-22px);
+  .pills{ transition-delay:.06s; }
+  main{ transition-delay:.12s; }
+  footer{ transition-delay:.18s; }
+  html.entry-veil .tagline,
+  html.entry-veil .pills,
+  html.entry-veil main,
+  html.entry-veil footer{
+    opacity:0; transform:translateY(10px);
   }
 
   .pills{display:flex; flex-wrap:wrap; justify-content:center; gap:8px;}
@@ -162,40 +167,11 @@
   if(entering){
     document.documentElement.classList.add('entry-veil');
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var STAGGER_MS = 55;
-
-    function scheduleReveal(){
-      var items = document.querySelectorAll('.reveal-item');
-      var vh = window.innerHeight;
-      var visibleCount = 0;
-      var i, r;
-      for(i = 0; i < items.length; i++){
-        r = items[i].getBoundingClientRect();
-        if(r.top < vh) visibleCount++;
-      }
-      var offscreenDelay = visibleCount * STAGGER_MS;
-      var visibleIdx = 0;
-      for(i = 0; i < items.length; i++){
-        r = items[i].getBoundingClientRect();
-        if(r.top < vh){
-          items[i].style.transitionDelay = (visibleIdx * STAGGER_MS) + 'ms';
-          visibleIdx++;
-        } else {
-          items[i].style.transitionDelay = offscreenDelay + 'ms';
-        }
-      }
-    }
-
     function reveal(){ document.documentElement.classList.remove('entry-veil'); }
     if(reduceMotion){ reveal(); }
     else{
       window.addEventListener('load', function(){
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){
-            scheduleReveal();
-            setTimeout(reveal, 20);
-          });
-        });
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(reveal, 90); }); });
       });
     }
   }
@@ -207,14 +183,14 @@
 <h1><img alt="Барная карта" class="brand-logo" src="logo-bar-wide-light.png"/></h1>
 <span class="tag">Тестовая версия</span>
 </div>
-<span class="tagline reveal-item">Демо-страница: структура и переход уже готовы, содержимое разделов — впереди</span>
+<span class="tagline">Демо-страница: структура и переход уже готовы, содержимое разделов — впереди</span>
 <nav class="pills">
-<label class="pill reveal-item" for="tab-lemon">Домашние лимонады</label>
-<label class="pill reveal-item" for="tab-cocktail">Коктейли</label>
-<label class="pill reveal-item" for="tab-calc">Калькулятор</label>
+<label class="pill" for="tab-lemon">Домашние лимонады</label>
+<label class="pill" for="tab-cocktail">Коктейли</label>
+<label class="pill" for="tab-calc">Калькулятор</label>
 </nav>
 </header>
-<main id="app" class="reveal-item">
+<main id="app">
 <section class="demo-panel" data-cat="lemon">
 <div class="demo-box">
 <p class="demo-eyebrow">Раздел в разработке</p>
@@ -237,11 +213,11 @@
 </div>
 </section>
 </main>
-<footer class="reveal-item">
+<footer>
   Премиксы в этой карте рассчитаны по ТТК из iiko. Если на вашей точке уже используются премиксы, отличающиеся от указанных, и вы хотите хранить их в таком же формате — можете отправить заявку на добавление под вашу точку.
 </footer>
 
-<footer class="sig reveal-item">
+<footer class="sig">
   <input type="checkbox" id="sig-toggle" class="sig-input"/>
   <label for="sig-toggle" class="sig-name">d.b wish</label>
   <div class="sig-reveal">

@@ -158,6 +158,15 @@
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
   }
+
+  /* При старте перехода весь остальной контент плавно уходит — в фокусе
+     остаётся только летящая карточка (клон, добавленный поверх). */
+  body.fly-active > .wrap,
+  body.fly-active > footer.sig{
+    transition:opacity .3s ease;
+    opacity:0;
+    pointer-events:none;
+  }
 </style>
 </head>
 <body>
@@ -171,6 +180,7 @@
 <a class="card card-tea" href="chai.html" data-final-logo-height="36" data-final-logo-top="12">
 <span class="card-text-center">
 <img class="tea-logo" src="logo-chai-wide.png" alt="Чайная карта"/>
+<span class="card-date">27.07.2026</span>
 </span>
 <span class="card-arrow-corner">→</span>
 </a>
@@ -206,8 +216,6 @@
 
 </div>
 
-<footer>Актуально на 27.07.26</footer>
-
 <footer class="sig">
   <input type="checkbox" id="sig-toggle" class="sig-input"/>
   <label for="sig-toggle" class="sig-name">d.b wish</label>
@@ -221,9 +229,11 @@
 (function(){
   var EASE = 'cubic-bezier(.4,0,.2,1)';
   var TOTAL_MS = 1100;        // единая длительность роста/сжатия кнопки — двигается ВСЁ разом, с этой же скоростью едет и текст
+  var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце полёта
+  var CLONE_FADE_MS = 380;    // при возврате: плавное растворение клона в настоящую (уже с узором) кнопку — без щелчка
   var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
-  var OTHER_REVEAL_MS = 420;  // при возврате: за сколько каждый из остальных элементов проявляется из прозрачности
-  var OTHER_STAGGER_MS = 90;  // и с каким шагом — один за другим, а не разом
+  var REVEAL_DELAY_MS = 220;  // при возврате: пауза после того, как кнопка встала на место
+  var REVEAL_MS = 700;        // при возврате: остальной контент проявляется медленно, а не рывком
 
   var themeMeta = document.querySelector('meta[name="theme-color"]');
   var ORIGINAL_THEME_COLOR = themeMeta ? themeMeta.getAttribute('content') : null;
@@ -256,10 +266,7 @@
       // отдельно от нашей анимации.
       setThemeColor(getComputedStyle(link).backgroundColor);
 
-      // Остальной контент НЕ прячем и не гасим — растущая карточка сама, по
-      // мере роста, естественно закрывает его собой (у клона самый высокий
-      // z-index). Это исключает саму возможность "потемнения" экрана: ничего
-      // не пропадает раньше, чем окажется физически прикрыто кнопкой.
+      document.body.classList.add('fly-active'); // остальной контент уходит
 
       var rect = link.getBoundingClientRect();
       var clone = link.cloneNode(true);
@@ -338,10 +345,10 @@
           if(cloneText) cloneText.style.top = finalLogoTop + 'px'; // точная позиция в реальной шапке
           if(cloneArrow) cloneArrow.style.opacity = '0';
           // Лого и дата остаются видимыми и просто уменьшаются до размера,
-          // который они займут в реальной шапке — кнопка не пропадает и не
-          // гаснет, а всё время видна как единое целое.
-          if(cloneLogo) cloneLogo.style.height = finalLogoH + 'px';
-          if(cloneDate) cloneDate.style.fontSize = '.64rem';
+          // который они займут в реальной шапке — это то самое "оставить
+          // кнопку видимой", а не спрятать её перед переходом.
+          if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; }
+          if(cloneDate){ cloneDate.style.fontSize = '.64rem'; }
 
           setTimeout(goToPage, TOTAL_MS + 60);
         });
@@ -357,16 +364,14 @@
   // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
   // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
   // Вместо перезагрузки — зеркально собираем всё обратно: коробка и текст едут
-  // единым движением и точно приходят на место настоящей кнопки, после чего
-  // она мгновенно и незаметно занимает место клона (визуально это одна и та
-  // же кнопка всё время, никакого пропадания). Остальной контент, который всё
-  // это время был скрыт клоном чисто физически, теперь проявляется из
-  // прозрачности один за другим, ещё пока коробка сжимается — так что нигде
-  // не возникает момента "голого" тёмного фона.
+  // единым движением, затем клон плавно растворяется в настоящую (уже с узором)
+  // карточку — без щелчка, — и только потом, с паузой и медленно, проявляется
+  // остальной контент.
   function reverseCollapse(flight){
     var link = flight.link, clone = flight.clone;
 
     if(!clone || !clone.parentNode){
+      document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
       if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
       return;
@@ -401,10 +406,14 @@
       cloneArrow.style.transition = 'opacity .3s ease';
     }
     if(cloneLogo){
-      cloneLogo.style.transition = 'height ' + TOTAL_MS + 'ms ' + EASE;
+      cloneLogo.style.transition =
+        'height ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
     if(cloneDate){
-      cloneDate.style.transition = 'font-size ' + TOTAL_MS + 'ms ' + EASE;
+      cloneDate.style.transition =
+        'font-size ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
 
     void clone.offsetHeight;
@@ -418,67 +427,41 @@
         clone.style.borderRadius = realRadius;
         if(cloneText) cloneText.style.top = naturalTextTop + 'px';
         if(cloneArrow) cloneArrow.style.opacity = '1';
-        if(cloneLogo) cloneLogo.style.height = '';
-        if(cloneDate) cloneDate.style.fontSize = '';
+        if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
+        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.opacity = '1'; }
       });
     });
 
-    // Остальной контент (сосед по панели, вторая панель, подписи внизу) всё
-    // это время был просто физически прикрыт клоном — прячем его синхронно
-    // прямо сейчас (клон ещё во весь экран, разницы не видно) и сразу же
-    // начинаем медленно проявлять обратно, один за другим, ПАРАЛЛЕЛЬНО со
-    // сжатием клона — так к моменту, когда коробка реально перестанет его
-    // прикрывать, всё уже будет видно, и голого тёмного фона нигде не мелькнёт.
-    var siblingCard = null;
-    if(link.parentElement){
-      var cardsInSamePanel = link.parentElement.querySelectorAll('a.card, .card.disabled');
-      for(var j = 0; j < cardsInSamePanel.length; j++){
-        if(cardsInSamePanel[j] !== link){ siblingCard = cardsInSamePanel[j]; break; }
-      }
-    }
-    var panels = document.querySelectorAll('.rest-panel');
-    var secondPanel = panels.length > 1 ? panels[1] : null;
-    var plainFooter = document.querySelector('body > footer:not(.sig)');
-    var sigFooter = document.querySelector('footer.sig');
-
-    var revealGroups = [];
-    if(siblingCard) revealGroups.push([siblingCard]);
-    if(secondPanel) revealGroups.push([secondPanel]);
-    var footers = [];
-    if(plainFooter) footers.push(plainFooter);
-    if(sigFooter) footers.push(sigFooter);
-    if(footers.length) revealGroups.push(footers);
-
-    for(var k = 0; k < revealGroups.length; k++){
-      var groupEls = revealGroups[k];
-      var delayMs = k * OTHER_STAGGER_MS;
-      for(var m = 0; m < groupEls.length; m++){
-        var el = groupEls[m];
-        el.style.transition = 'none';
-        el.style.opacity = '0';
-        void el.offsetHeight;
-        el.style.transition = 'opacity ' + OTHER_REVEAL_MS + 'ms ease ' + delayMs + 'ms';
-        el.style.opacity = '1';
-      }
-    }
-
-    // Коробка и текст пришли на точное место настоящей кнопки — мгновенно и
-    // незаметно (клон и настоящая кнопка выглядят одинаково) отдаём место
-    // настоящей карточке. Никакого отдельного растворения — кнопка просто
-    // всё время "висит" на своём месте, не пропадая ни на кадр.
+    // Коробка и текст пришли на точное место настоящей кнопки. Показываем
+    // настоящую (уже с узором фона) кнопку под клоном и плавно растворяем
+    // клон поверх неё — узор проступает мягко, а не щелчком.
     setTimeout(function(){
       if(link) link.style.visibility = '';
-      if(clone.parentNode) clone.parentNode.removeChild(clone);
-      if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+      clone.style.willChange = '';
+      clone.style.transition = 'opacity ' + CLONE_FADE_MS + 'ms ease';
+      void clone.offsetHeight;
+      clone.style.opacity = '0';
 
       setTimeout(function(){
-        for(var k2 = 0; k2 < revealGroups.length; k2++){
-          for(var m2 = 0; m2 < revealGroups[k2].length; m2++){
-            revealGroups[k2][m2].style.transition = '';
-            revealGroups[k2][m2].style.opacity = '';
-          }
-        }
-      }, OTHER_STAGGER_MS * (revealGroups.length + 1) + OTHER_REVEAL_MS + 60);
+        if(clone.parentNode) clone.parentNode.removeChild(clone);
+        if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+
+        // Кнопка давно на месте — и только теперь, с небольшой паузой и
+        // намеренно медленно, проявляется обратно всё остальное содержимое.
+        setTimeout(function(){
+          var wrap = document.querySelector('.wrap');
+          var sig = document.querySelector('footer.sig');
+          var slowFade = 'opacity ' + REVEAL_MS + 'ms ease';
+          if(wrap) wrap.style.transition = slowFade;
+          if(sig) sig.style.transition = slowFade;
+          document.body.classList.remove('fly-active');
+
+          setTimeout(function(){
+            if(wrap) wrap.style.transition = '';
+            if(sig) sig.style.transition = '';
+          }, REVEAL_MS + 50);
+        }, REVEAL_DELAY_MS);
+      }, CLONE_FADE_MS + 20);
     }, TOTAL_MS + 40);
   }
 
