@@ -223,6 +223,9 @@
   var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце полёта
   var CLONE_FADE_MS = 380;    // при возврате: плавное растворение клона в настоящую (уже с узором) кнопку — без щелчка
   var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
+  var FADE_MS = 360;          // длительность угасания/проявления каждого из остальных элементов
+  var FADE_STAGGER_MS = 130;  // и шаг между ними — один за другим, а не разом
+  var FADE_OUT_BASE_MS = 480; // при уходе: пауза перед первым угасанием — даём кнопке время подрасти
 
   var themeMeta = document.querySelector('meta[name="theme-color"]');
   var ORIGINAL_THEME_COLOR = themeMeta ? themeMeta.getAttribute('content') : null;
@@ -256,10 +259,6 @@
       // отдельно от нашей анимации.
       setThemeColor(getComputedStyle(link).backgroundColor);
 
-      // Остальной контент НЕ прячем и не гасим — растущая карточка сама, по
-      // мере роста, естественно закрывает его собой (у клона самый высокий
-      // z-index). Так исключается сама возможность "потемнения" экрана.
-
       var rect = link.getBoundingClientRect();
       var clone = link.cloneNode(true);
       clone.classList.add('fly-clone');
@@ -288,6 +287,35 @@
       document.body.appendChild(clone);
       link.style.visibility = 'hidden'; // прячем оригинал, место в макете не трогаем
       activeFlights.push({ link: link, clone: clone });
+
+      // Остальной контент тоже уходит — но не разом и не сразу, а по одному,
+      // и с задержкой, достаточной для того, чтобы растущая карточка успела
+      // закрыть его собой. К моменту, когда элемент реально начинает таять,
+      // под ним уже не голый тёмный фон, а сама кнопка — поэтому затемнения
+      // не видно, а плавное угасание — видно.
+      var siblingCard = null;
+      if(link.parentElement){
+        var cardsInSamePanel = link.parentElement.querySelectorAll('a.card, .card.disabled');
+        for(var j = 0; j < cardsInSamePanel.length; j++){
+          if(cardsInSamePanel[j] !== link){ siblingCard = cardsInSamePanel[j]; break; }
+        }
+      }
+      var panelsFwd = document.querySelectorAll('.rest-panel');
+      var secondPanelFwd = panelsFwd.length > 1 ? panelsFwd[1] : null;
+      var sigFooterFwd = document.querySelector('footer.sig');
+
+      var fadeOutTargets = [];
+      if(siblingCard) fadeOutTargets.push(siblingCard);
+      if(secondPanelFwd) fadeOutTargets.push(secondPanelFwd);
+      if(sigFooterFwd) fadeOutTargets.push(sigFooterFwd);
+
+      for(var k = 0; k < fadeOutTargets.length; k++){
+        var elOut = fadeOutTargets[k];
+        var delayOut = FADE_OUT_BASE_MS + k * FADE_STAGGER_MS;
+        elOut.style.pointerEvents = 'none';
+        elOut.style.transition = 'opacity ' + FADE_MS + 'ms ease ' + delayOut + 'ms';
+        elOut.style.opacity = '0';
+      }
 
       var cloneText = clone.querySelector('.card-text-center');
       var cloneLogo = clone.querySelector('.tea-logo, .bar-logo');
@@ -327,7 +355,7 @@
         cloneLogo.style.transition = 'height ' + TOTAL_MS + 'ms ' + EASE;
       }
       if(cloneDate){
-        cloneDate.style.transition = 'font-size ' + TOTAL_MS + 'ms ' + EASE;
+        cloneDate.style.transition = 'font-size ' + TOTAL_MS + 'ms ' + EASE + ', letter-spacing ' + TOTAL_MS + 'ms ' + EASE;
       }
 
       // форсируем рефлоу, чтобы браузер зафиксировал стартовое состояние
@@ -351,7 +379,7 @@
           // который они займут в реальной шапке — это то самое "оставить
           // кнопку видимой", а не спрятать её перед переходом.
           if(cloneLogo){ cloneLogo.style.height = finalLogoH + 'px'; }
-          if(cloneDate){ cloneDate.style.fontSize = '.64rem'; }
+          if(cloneDate){ cloneDate.style.fontSize = '.68rem'; cloneDate.style.letterSpacing = '.09em'; }
 
           setTimeout(goToPage, TOTAL_MS + 60);
         });
@@ -365,17 +393,52 @@
   // ---------- Возврат назад без перезагрузки ----------
   // Если браузер восстанавливает эту страницу из bfcache (кнопка "назад" после
   // перехода в чайную/барную карту), она будет заморожена ровно в момент ухода —
-  // то есть с летящим клоном на весь экран и спрятанной настоящей карточкой.
-  // Вместо перезагрузки — зеркально собираем всё обратно: коробка и текст едут
-  // единым движением, затем клон плавно растворяется в настоящую (уже с узором)
-  // карточку — без щелчка, — и только потом, с паузой и медленно, проявляется
-  // остальной контент.
+  // то есть с летящим клоном на весь экран, спрятанной настоящей карточкой и
+  // угасшим остальным контентом. Вместо перезагрузки — зеркально собираем всё
+  // обратно: коробка и текст едут единым движением, остальной контент проявляется
+  // по одному сразу же (клон в это время ещё большой и надёжно его прикрывает),
+  // а в самом конце клон плавно растворяется в настоящую (уже с узором) кнопку —
+  // без щелчка.
   function reverseCollapse(flight){
     var link = flight.link, clone = flight.clone;
+
+    // Остальной контент (сосед по панели, вторая панель, подпись внизу) мог
+    // остаться угасшим ещё с прошлого угасания при уходе — возвращаем его,
+    // по одному, тем же порядком.
+    function restoreOtherContent(staggered){
+      var siblingCard = null;
+      if(link && link.parentElement){
+        var cardsInSamePanel = link.parentElement.querySelectorAll('a.card, .card.disabled');
+        for(var j = 0; j < cardsInSamePanel.length; j++){
+          if(cardsInSamePanel[j] !== link){ siblingCard = cardsInSamePanel[j]; break; }
+        }
+      }
+      var panels = document.querySelectorAll('.rest-panel');
+      var secondPanel = panels.length > 1 ? panels[1] : null;
+      var sigFooter = document.querySelector('footer.sig');
+
+      var targets = [];
+      if(siblingCard) targets.push(siblingCard);
+      if(secondPanel) targets.push(secondPanel);
+      if(sigFooter) targets.push(sigFooter);
+
+      for(var k = 0; k < targets.length; k++){
+        var el = targets[k];
+        if(staggered){
+          el.style.transition = 'opacity ' + FADE_MS + 'ms ease ' + (k * FADE_STAGGER_MS) + 'ms';
+          el.style.opacity = '1';
+        } else {
+          el.style.transition = '';
+          el.style.opacity = '';
+        }
+        el.style.pointerEvents = '';
+      }
+    }
 
     if(!clone || !clone.parentNode){
       if(link) link.style.visibility = '';
       if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+      restoreOtherContent(false);
       return;
     }
 
@@ -396,6 +459,7 @@
       if(linkText) naturalTextTop = linkText.getBoundingClientRect().top;
     }
     var realRadius = getComputedStyle(link).borderRadius;
+    restoreOtherContent(true);
 
     clone.style.transition =
       'top ' + TOTAL_MS + 'ms ' + EASE + ',' +
@@ -418,6 +482,7 @@
     if(cloneDate){
       cloneDate.style.transition =
         'font-size ' + TOTAL_MS + 'ms ' + EASE + ',' +
+        'letter-spacing ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'opacity ' + TEXT_FADE_MS + 'ms ease';
     }
 
@@ -437,7 +502,7 @@
         if(cloneText) cloneText.style.top = naturalTextTop + 'px';
         if(cloneArrow) cloneArrow.style.opacity = '1';
         if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
-        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.opacity = '1'; }
+        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.letterSpacing = ''; cloneDate.style.opacity = '1'; }
       });
     });
 
