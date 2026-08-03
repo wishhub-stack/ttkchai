@@ -158,15 +158,6 @@
     font-family:'Manrope',sans-serif; font-size:.66rem; color:var(--muted);
     max-width:260px; line-height:1.45;
   }
-
-  /* При старте перехода весь остальной контент плавно уходит — в фокусе
-     остаётся только летящая карточка (клон, добавленный поверх). */
-  body.fly-active > .wrap,
-  body.fly-active > footer.sig{
-    transition:opacity .3s ease;
-    opacity:0;
-    pointer-events:none;
-  }
 </style>
 </head>
 <body>
@@ -232,8 +223,6 @@
   var TEXT_FADE_MS = 240;     // сколько длится исчезновение текста в самом конце полёта
   var CLONE_FADE_MS = 380;    // при возврате: плавное растворение клона в настоящую (уже с узором) кнопку — без щелчка
   var OVERSCAN = 24;          // запас за края экрана — гарантирует идеальную заливку без шва по краю
-  var REVEAL_DELAY_MS = 220;  // при возврате: пауза после того, как кнопка встала на место
-  var REVEAL_MS = 700;        // при возврате: остальной контент проявляется медленно, а не рывком
 
   var themeMeta = document.querySelector('meta[name="theme-color"]');
   var ORIGINAL_THEME_COLOR = themeMeta ? themeMeta.getAttribute('content') : null;
@@ -267,7 +256,9 @@
       // отдельно от нашей анимации.
       setThemeColor(getComputedStyle(link).backgroundColor);
 
-      document.body.classList.add('fly-active'); // остальной контент уходит
+      // Остальной контент НЕ прячем и не гасим — растущая карточка сама, по
+      // мере роста, естественно закрывает его собой (у клона самый высокий
+      // z-index). Так исключается сама возможность "потемнения" экрана.
 
       var rect = link.getBoundingClientRect();
       var clone = link.cloneNode(true);
@@ -383,7 +374,6 @@
     var link = flight.link, clone = flight.clone;
 
     if(!clone || !clone.parentNode){
-      document.body.classList.remove('fly-active');
       if(link) link.style.visibility = '';
       if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
       return;
@@ -453,7 +443,9 @@
 
     // Коробка и текст пришли на точное место настоящей кнопки. Показываем
     // настоящую (уже с узором фона) кнопку под клоном и плавно растворяем
-    // клон поверх неё — узор проступает мягко, а не щелчком.
+    // клон поверх неё — узор проступает мягко, а не щелчком. Остальной
+    // контент всё это время оставался на месте (его никто не прятал), так
+    // что отдельно "проявлять" его не нужно — он уже там.
     setTimeout(function(){
       if(link) link.style.visibility = '';
       clone.style.willChange = '';
@@ -464,28 +456,19 @@
       setTimeout(function(){
         if(clone.parentNode) clone.parentNode.removeChild(clone);
         if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
-
-        // Кнопка давно на месте — и только теперь, с небольшой паузой и
-        // намеренно медленно, проявляется обратно всё остальное содержимое.
-        setTimeout(function(){
-          var wrap = document.querySelector('.wrap');
-          var sig = document.querySelector('footer.sig');
-          var slowFade = 'opacity ' + REVEAL_MS + 'ms ease';
-          if(wrap) wrap.style.transition = slowFade;
-          if(sig) sig.style.transition = slowFade;
-          document.body.classList.remove('fly-active');
-
-          setTimeout(function(){
-            if(wrap) wrap.style.transition = '';
-            if(sig) sig.style.transition = '';
-          }, REVEAL_MS + 50);
-        }, REVEAL_DELAY_MS);
       }, CLONE_FADE_MS + 20);
     }, TOTAL_MS + 40);
   }
 
   window.addEventListener('pageshow', function(){
     if(!activeFlights.length) return;
+    // Если страница была прокручена — сбрасываем прокрутку в начало ДО
+    // расчёта целевой позиции кнопки. Иначе клон летит туда, где кнопка
+    // была на момент замера, а реальная (уже прокрученная к началу или
+    // ещё нет) страница может показать её в другом месте — отсюда и рывок
+    // в конце. Так позиция всегда однозначна и совпадает с тем, что видит
+    // пользователь.
+    window.scrollTo(0, 0);
     var flights = activeFlights;
     activeFlights = [];
     for(var i = 0; i < flights.length; i++){ reverseCollapse(flights[i]); }
