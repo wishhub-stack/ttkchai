@@ -43,10 +43,6 @@
   }
   .rest-panel:first-child{margin-top:0;}
   .rest-panel:last-child{margin-bottom:0;}
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:.64rem; letter-spacing:.12em;
-    color:var(--accent); text-align:center; text-transform:uppercase; margin:0 0 10px;
-  }
   .rest-name{
     font-family:'Manrope',sans-serif; font-size:1.32rem; font-weight:700; margin:0;
     letter-spacing:-.02em; line-height:1.15; text-align:center; color:var(--ink);
@@ -122,32 +118,29 @@
   }
 
   /* ---------- Signature: tap "d.b wish" and contact details fade in beneath it ---------- */
-  .sig{border:none; padding:0; margin-top:36px; text-align:center;}
-  .sig-input{
-    position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
-    clip:rect(0 0 0 0); overflow:hidden; white-space:nowrap;
+  .sig-top{
+    position:relative; text-align:center;
+    padding:0 16px 28px; min-height:44px;
   }
-  .sig-name{
-    display:inline-block; cursor:pointer; padding:4px 3px;
+  .sig-logo-btn{
+    display:inline-block; cursor:pointer; padding:4px 6px; border:none; background:none;
     -webkit-tap-highlight-color:transparent;
-    transition:opacity .2s ease;
+    transition:opacity .3s ease;
   }
-  .sig-logo{height:24px; width:auto; display:block;}
+  .sig-logo{height:26px; width:auto; display:block;}
   @media (hover:hover){
-    .sig-name:hover{ opacity:.75; }
+    .sig-logo-btn:hover{ opacity:.75; }
   }
-  .sig-reveal{
+  .sig-top.sig-open .sig-logo-btn{ opacity:0; pointer-events:none; }
+  .sig-msg{
+    position:absolute; top:0; left:0; width:100%; padding:0 16px;
+    transform:translateY(4px) scale(.96);
     display:flex; flex-direction:column; align-items:center; gap:4px;
-    max-height:0; opacity:0; filter:blur(6px); transform:translateY(-4px) scale(.96);
-    overflow:hidden; pointer-events:none;
-    transition:max-height 1.15s cubic-bezier(.16,1,.3,1),
-               opacity 1.05s ease .12s,
-               filter 1.05s ease .12s,
-               transform 1.1s cubic-bezier(.16,1,.3,1) .08s;
+    opacity:0; pointer-events:none;
+    transition:opacity .4s ease, transform .4s ease;
   }
-  .sig-input:checked ~ .sig-reveal{
-    max-height:70px; opacity:1; filter:blur(0); transform:translateY(0) scale(1);
-    pointer-events:auto; margin-top:6px;
+  .sig-top.sig-open .sig-msg{
+    opacity:1; transform:translateY(0) scale(1); pointer-events:auto;
   }
   .sig-tg{
     font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:.8rem;
@@ -163,8 +156,17 @@
 <body>
 <div class="wrap">
 
+<div class="sig-top" id="sigTop">
+  <button aria-label="Контакты" class="sig-logo-btn" id="sigLogoBtn" type="button">
+    <img alt="d.b wish" class="sig-logo" src="sig-wish-dark.png"/>
+  </button>
+  <div class="sig-msg">
+    <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
+    <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
+  </div>
+</div>
+
 <section class="rest-panel">
-<p class="eyebrow">Главное меню</p>
 <h2 class="rest-name"><img class="rest-logo" src="logo-hacho-puri-light.png" alt="Хачо и Пури"/></h2>
 <div class="divider"></div>
 <div class="cards">
@@ -186,7 +188,6 @@
 </section>
 
 <section class="rest-panel">
-<p class="eyebrow">Главное меню</p>
 <h2 class="rest-name">Пхали-Хинкали</h2>
 <div class="divider"></div>
 <div class="cards">
@@ -206,15 +207,6 @@
 </section>
 
 </div>
-
-<footer class="sig">
-  <input type="checkbox" id="sig-toggle" class="sig-input"/>
-  <label for="sig-toggle" class="sig-name"><img alt="d.b wish" class="sig-logo" src="sig-wish-dark.png"/></label>
-  <div class="sig-reveal">
-    <a class="sig-tg" href="https://t.me/wish_tgm" target="_blank" rel="noopener">@wish_tgm</a>
-    <span class="sig-caption">Пишите по предложениям и изменениям под ваши конкретные желания</span>
-  </div>
-</footer>
 
 <script>
 (function(){
@@ -302,7 +294,7 @@
       }
       var panelsFwd = document.querySelectorAll('.rest-panel');
       var secondPanelFwd = panelsFwd.length > 1 ? panelsFwd[1] : null;
-      var sigFooterFwd = document.querySelector('footer.sig');
+      var sigFooterFwd = document.getElementById('sigTop');
 
       var fadeOutTargets = [];
       if(siblingCard) fadeOutTargets.push(siblingCard);
@@ -346,7 +338,7 @@
         'background-position ' + TOTAL_MS + 'ms ' + EASE + ',' +
         'border-radius ' + TOTAL_MS + 'ms ' + EASE;
       if(cloneText){
-        cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
+        cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE + ', gap ' + TOTAL_MS + 'ms ' + EASE;
       }
       if(cloneArrow){
         cloneArrow.style.transition = 'opacity .25s ease';
@@ -373,7 +365,7 @@
           var bgX = (window.innerWidth - tileW) / 2 + OVERSCAN;
           var bgY = OVERSCAN;
           clone.style.backgroundPosition = '0px 0px, ' + bgX + 'px ' + bgY + 'px';
-          if(cloneText) cloneText.style.top = finalLogoTop + 'px'; // точная позиция в реальной шапке
+          if(cloneText){ cloneText.style.top = finalLogoTop + 'px'; cloneText.style.gap = '3px'; } // точная позиция и отступ, как в реальной шапке
           if(cloneArrow) cloneArrow.style.opacity = '0';
           // Лого и дата остаются видимыми и просто уменьшаются до размера,
           // который они займут в реальной шапке — это то самое "оставить
@@ -415,7 +407,7 @@
       }
       var panels = document.querySelectorAll('.rest-panel');
       var secondPanel = panels.length > 1 ? panels[1] : null;
-      var sigFooter = document.querySelector('footer.sig');
+      var sigFooter = document.getElementById('sigTop');
 
       var targets = [];
       if(siblingCard) targets.push(siblingCard);
@@ -449,16 +441,6 @@
     var tileW = parseInt(clone.getAttribute('data-tile-width'), 10);
     if(isNaN(tileW)) tileW = 460;
 
-    // Настоящая карточка всё ещё скрыта (visibility:hidden), но её геометрия
-    // никуда не делась — берём оттуда ТОЧНУЮ цель для текста и коробки,
-    // без каких-либо приближений.
-    var rect = link.getBoundingClientRect();
-    var naturalTextTop = rect.top;
-    if(cloneText){
-      var linkText = link.querySelector('.card-text-center');
-      if(linkText) naturalTextTop = linkText.getBoundingClientRect().top;
-    }
-    var realRadius = getComputedStyle(link).borderRadius;
     restoreOtherContent(true);
 
     clone.style.transition =
@@ -469,7 +451,7 @@
       'background-position ' + TOTAL_MS + 'ms ' + EASE + ',' +
       'border-radius ' + TOTAL_MS + 'ms ' + EASE;
     if(cloneText){
-      cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE;
+      cloneText.style.transition = 'top ' + TOTAL_MS + 'ms ' + EASE + ', gap ' + TOTAL_MS + 'ms ' + EASE;
     }
     if(cloneArrow){
       cloneArrow.style.transition = 'opacity .3s ease';
@@ -488,41 +470,64 @@
 
     void clone.offsetHeight;
 
-    requestAnimationFrame(function(){
+    // Координаты берём не сейчас, а в последний момент, прямо перед стартом
+    // движения — и только когда шрифты точно готовы. Если измерить раньше
+    // (сразу при восстановлении страницы из bfcache), разметка может ещё не
+    // до конца устояться (например, из-за донагрузки шрифта) — тогда клон
+    // летит по чуть устаревшим координатам и в конце ощутимо "доезжает"/
+    // подпрыгивает до настоящего места. Пересчёт в последний момент убирает
+    // этот зазор.
+    function startShrink(){
       requestAnimationFrame(function(){
-        clone.style.top = rect.top + 'px';
-        clone.style.left = rect.left + 'px';
-        clone.style.width = rect.width + 'px';
-        clone.style.height = rect.height + 'px';
-        clone.style.borderRadius = realRadius;
-        // Возвращаем узор туда же, где он был у кнопки в естественном состоянии
-        // (до клика) — то есть «top center» относительно самой карточки.
-        var bgXBack = (rect.width - tileW) / 2;
-        clone.style.backgroundPosition = '0px 0px, ' + bgXBack + 'px 0px';
-        if(cloneText) cloneText.style.top = naturalTextTop + 'px';
-        if(cloneArrow) cloneArrow.style.opacity = '1';
-        if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
-        if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.letterSpacing = ''; cloneDate.style.opacity = '1'; }
+        requestAnimationFrame(function(){
+          var rectNow = link.getBoundingClientRect();
+          var naturalTextTopNow = rectNow.top;
+          if(cloneText){
+            var linkTextNow = link.querySelector('.card-text-center');
+            if(linkTextNow) naturalTextTopNow = linkTextNow.getBoundingClientRect().top;
+          }
+          var realRadiusNow = getComputedStyle(link).borderRadius;
+
+          clone.style.top = rectNow.top + 'px';
+          clone.style.left = rectNow.left + 'px';
+          clone.style.width = rectNow.width + 'px';
+          clone.style.height = rectNow.height + 'px';
+          clone.style.borderRadius = realRadiusNow;
+          // Возвращаем узор туда же, где он был у кнопки в естественном состоянии
+          // (до клика) — то есть «top center» относительно самой карточки.
+          var bgXBack = (rectNow.width - tileW) / 2;
+          clone.style.backgroundPosition = '0px 0px, ' + bgXBack + 'px 0px';
+          if(cloneText){ cloneText.style.top = naturalTextTopNow + 'px'; cloneText.style.gap = ''; }
+          if(cloneArrow) cloneArrow.style.opacity = '1';
+          if(cloneLogo){ cloneLogo.style.height = ''; cloneLogo.style.opacity = '1'; }
+          if(cloneDate){ cloneDate.style.fontSize = ''; cloneDate.style.letterSpacing = ''; cloneDate.style.opacity = '1'; }
+
+          // Коробка и текст пришли на точное место настоящей кнопки. Показываем
+          // настоящую (уже с узором фона) кнопку под клоном и плавно растворяем
+          // клон поверх неё — узор проступает мягко, а не щелчком. Остальной
+          // контент всё это время оставался на месте (его никто не прятал), так
+          // что отдельно "проявлять" его не нужно — он уже там.
+          setTimeout(function(){
+            if(link) link.style.visibility = '';
+            clone.style.willChange = '';
+            clone.style.transition = 'opacity ' + CLONE_FADE_MS + 'ms ease';
+            void clone.offsetHeight;
+            clone.style.opacity = '0';
+
+            setTimeout(function(){
+              if(clone.parentNode) clone.parentNode.removeChild(clone);
+              if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
+            }, CLONE_FADE_MS + 20);
+          }, TOTAL_MS + 40);
+        });
       });
-    });
+    }
 
-    // Коробка и текст пришли на точное место настоящей кнопки. Показываем
-    // настоящую (уже с узором фона) кнопку под клоном и плавно растворяем
-    // клон поверх неё — узор проступает мягко, а не щелчком. Остальной
-    // контент всё это время оставался на месте (его никто не прятал), так
-    // что отдельно "проявлять" его не нужно — он уже там.
-    setTimeout(function(){
-      if(link) link.style.visibility = '';
-      clone.style.willChange = '';
-      clone.style.transition = 'opacity ' + CLONE_FADE_MS + 'ms ease';
-      void clone.offsetHeight;
-      clone.style.opacity = '0';
-
-      setTimeout(function(){
-        if(clone.parentNode) clone.parentNode.removeChild(clone);
-        if(ORIGINAL_THEME_COLOR) setThemeColor(ORIGINAL_THEME_COLOR);
-      }, CLONE_FADE_MS + 20);
-    }, TOTAL_MS + 40);
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(startShrink, startShrink);
+    } else {
+      startShrink();
+    }
   }
 
   window.addEventListener('pageshow', function(){
@@ -537,6 +542,23 @@
     var flights = activeFlights;
     activeFlights = [];
     for(var i = 0; i < flights.length; i++){ reverseCollapse(flights[i]); }
+  });
+})();
+
+(function(){
+  // Тап по подписи "проглатывает" её на 6 секунд, показывая на её же месте
+  // контакты, и сама возвращается обратно — без повторного нажатия.
+  var sigTop = document.getElementById('sigTop');
+  var sigBtn = document.getElementById('sigLogoBtn');
+  if(!sigTop || !sigBtn) return;
+  var hideTimer = null;
+
+  sigBtn.addEventListener('click', function(){
+    sigTop.classList.add('sig-open');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){
+      sigTop.classList.remove('sig-open');
+    }, 6000);
   });
 })();
 </script>
